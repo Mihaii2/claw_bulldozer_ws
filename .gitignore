@@ -1,0 +1,24 @@
+# ESP-IDF build artifacts
+build/
+**/build/
+sdkconfig
+sdkconfig.old
+
+# ROS 2 build & install directories
+install/
+log/
+**/install/
+**/log/
+
+# VS Code user-specific settings (keep tasks/c_cpp if team-shared, ignore local state)
+.vscode/*
+!.vscode/tasks.json
+!.vscode/c_cpp_properties.json
+!.vscode/settings.json
+*.code-workspace
+
+# Python / CMake caches
+__pycache__/
+*.pyc
+CMakeFiles/
+CMakeCache.txt
