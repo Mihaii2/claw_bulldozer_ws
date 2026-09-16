@@ -1,0 +1,437 @@
+<?xml version="1.0"?>
+<robot name="bulldozer">
+
+  <!-- ==================================================== -->
+  <!-- MATERIALS                                            -->
+  <!-- ==================================================== -->
+  <material name="chassis_blue">
+    <color rgba="0.12 0.35 0.78 1.0"/>
+  </material>
+  <material name="arm_orange">
+    <color rgba="0.95 0.45 0.05 1.0"/>
+  </material>
+  <material name="cup_yellow">
+    <color rgba="0.95 0.85 0.10 1.0"/>
+  </material>
+  <material name="claw_dark">
+    <color rgba="0.20 0.20 0.22 1.0"/>
+  </material>
+  <material name="tire_black">
+    <color rgba="0.08 0.08 0.08 1.0"/>
+  </material>
+
+  <!-- ==================================================== -->
+  <!-- BASE LINK & CHASSIS BODY                             -->
+  <!-- ==================================================== -->
+  <link name="base_link">
+    <inertial>
+      <mass value="0.75"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="0.0020" ixy="0" ixz="0" iyy="0.0035" iyz="0" izz="0.0035"/>
+    </inertial>
+
+    <!-- Main Chassis Base -->
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://bulldozer/meshes/Part Studio 1 - 02_Chassis_Base.stl" scale="1 1 1"/>
+      </geometry>
+      <material name="chassis_blue"/>
+    </visual>
+
+    <!-- Left Arm Base Mount -->
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://bulldozer/meshes/Part Studio 1 - 03_Arm_Base_Mount_Left.stl" scale="1 1 1"/>
+      </geometry>
+      <material name="chassis_blue"/>
+    </visual>
+
+    <!-- Right Arm Base Mount -->
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://bulldozer/meshes/Part Studio 1 - 04_Arm_Base_Mount_Right.stl" scale="1 1 1"/>
+      </geometry>
+      <material name="chassis_blue"/>
+    </visual>
+
+    <!-- Bearing Flanges -->
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://bulldozer/meshes/Part Studio 1 - 06_Bearing_Flange_1.stl" scale="1 1 1"/>
+      </geometry>
+      <material name="claw_dark"/>
+    </visual>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://bulldozer/meshes/Part Studio 1 - 06_Bearing_Flange_2.stl" scale="1 1 1"/>
+      </geometry>
+      <material name="claw_dark"/>
+    </visual>
+
+    <!-- Camera Bracket -->
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://bulldozer/meshes/Part Studio 1 - 15_Cam_Holder.stl" scale="1 1 1"/>
+      </geometry>
+      <material name="chassis_blue"/>
+    </visual>
+
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.14 0.10 0.04"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- ==================================================== -->
+  <!-- DUAL SYNCHRONIZED ARM ASSEMBLY                       -->
+  <!-- ==================================================== -->
+  <link name="arm_link">
+    <inertial>
+      <mass value="0.25"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="0.0005" ixy="0" ixz="0" iyy="0.0005" iyz="0" izz="0.0005"/>
+    </inertial>
+
+    <!-- Left Arm Structural Beam -->
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://bulldozer/meshes/Part Studio 1 - 05_Lift_Left_Arm.stl" scale="1 1 1"/>
+      </geometry>
+      <material name="arm_orange"/>
+    </visual>
+
+    <!-- Right Arm Structural Beam -->
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://bulldozer/meshes/Part Studio 1 - 10_Right_Arm.stl" scale="1 1 1"/>
+      </geometry>
+      <material name="arm_orange"/>
+    </visual>
+
+    <!-- Crossbeam Supports -->
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://bulldozer/meshes/Part Studio 1 - 10_Arms_Support_Beam_1.stl" scale="1 1 1"/>
+      </geometry>
+      <material name="arm_orange"/>
+    </visual>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://bulldozer/meshes/Part Studio 1 - 11_Arms_Support_Beam_2.stl" scale="1 1 1"/>
+      </geometry>
+      <material name="arm_orange"/>
+    </visual>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://bulldozer/meshes/Part Studio 1 - 18_Arms_Vertical_Support.stl" scale="1 1 1"/>
+      </geometry>
+      <material name="arm_orange"/>
+    </visual>
+
+    <!-- Nut Flanges -->
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://bulldozer/meshes/Part Studio 1 - 07_Left_Arm_Nut_Flange.stl" scale="1 1 1"/>
+      </geometry>
+      <material name="claw_dark"/>
+    </visual>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://bulldozer/meshes/Part Studio 1 - 12_Right_Arm_Nut_Flange.stl" scale="1 1 1"/>
+      </geometry>
+      <material name="claw_dark"/>
+    </visual>
+
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.10 0.12 0.04"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="arm_joint" type="revolute">
+    <parent link="base_link"/>
+    <child link="arm_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-0.80" upper="0.80" effort="3.0" velocity="2.0"/>
+  </joint>
+
+  <!-- ==================================================== -->
+  <!-- CUP TILT MECHANISM                                   -->
+  <!-- ==================================================== -->
+  <link name="cup_link">
+    <inertial>
+      <mass value="0.12"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001"/>
+    </inertial>
+
+    <!-- Cup Scoop -->
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://bulldozer/meshes/Part Studio 1 - 08_Cup.stl" scale="1 1 1"/>
+      </geometry>
+      <material name="cup_yellow"/>
+    </visual>
+
+    <!-- Arm Connector -->
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://bulldozer/meshes/Part Studio 1 - 09_Cup_Arm_Connector.stl" scale="1 1 1"/>
+      </geometry>
+      <material name="arm_orange"/>
+    </visual>
+
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.06 0.10 0.04"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="cup_joint" type="revolute">
+    <parent link="arm_link"/>
+    <child link="cup_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-1.22" upper="1.22" effort="2.0" velocity="2.0"/>
+  </joint>
+
+  <!-- ==================================================== -->
+  <!-- CLAW GRIPPER ASSEMBLY                                -->
+  <!-- ==================================================== -->
+  <link name="claw_link">
+    <inertial>
+      <mass value="0.10"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001"/>
+    </inertial>
+
+    <!-- Beams & Brackets -->
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://bulldozer/meshes/Part Studio 1 - 13_Right_Claw_Beam.stl" scale="1 1 1"/>
+      </geometry>
+      <material name="claw_dark"/>
+    </visual>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://bulldozer/meshes/Part Studio 1 - 14_Left_Claw_Beam.stl" scale="1 1 1"/>
+      </geometry>
+      <material name="claw_dark"/>
+    </visual>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://bulldozer/meshes/Part Studio 1 - 16_Right_Claw_Beam.stl" scale="1 1 1"/>
+      </geometry>
+      <material name="claw_dark"/>
+    </visual>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://bulldozer/meshes/Part Studio 1 - 17_Left_Claw_Beam.stl" scale="1 1 1"/>
+      </geometry>
+      <material name="claw_dark"/>
+    </visual>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://bulldozer/meshes/Part Studio 1 - 19_Claw_Front_Beam.stl" scale="1 1 1"/>
+      </geometry>
+      <material name="claw_dark"/>
+    </visual>
+
+    <!-- Jaws / Gripper Body -->
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://bulldozer/meshes/Part Studio 1 - 15_Claw_Grabber.stl" scale="1 1 1"/>
+      </geometry>
+      <material name="claw_dark"/>
+    </visual>
+
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.05 0.08 0.03"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="claw_joint" type="revolute">
+    <parent link="cup_link"/>
+    <child link="claw_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1.22" upper="1.22" effort="2.0" velocity="2.0"/>
+  </joint>
+
+  <!-- ==================================================== -->
+  <!-- WHEELS & TRACK DRIVE (Properly Sized for Chassis)    -->
+  <!-- ==================================================== -->
+  <!-- 1. Front Left Wheel -->
+  <link name="front_left_wheel">
+    <inertial>
+      <mass value="0.03"/>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <inertia ixx="0.00002" ixy="0" ixz="0" iyy="0.00002" iyz="0" izz="0.00002"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <geometry><cylinder radius="0.020" length="0.016"/></geometry>
+      <material name="tire_black"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <geometry><cylinder radius="0.020" length="0.016"/></geometry>
+    </collision>
+  </link>
+  <joint name="front_left_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="front_left_wheel"/>
+    <origin xyz="0.040 0.048 -0.012" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+  </joint>
+
+  <!-- 2. Rear Left Wheel -->
+  <link name="rear_left_wheel">
+    <inertial>
+      <mass value="0.03"/>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <inertia ixx="0.00002" ixy="0" ixz="0" iyy="0.00002" iyz="0" izz="0.00002"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <geometry><cylinder radius="0.020" length="0.016"/></geometry>
+      <material name="tire_black"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <geometry><cylinder radius="0.020" length="0.016"/></geometry>
+    </collision>
+  </link>
+  <joint name="rear_left_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="rear_left_wheel"/>
+    <origin xyz="-0.040 0.048 -0.012" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+  </joint>
+
+  <!-- 3. Front Right Wheel -->
+  <link name="front_right_wheel">
+    <inertial>
+      <mass value="0.03"/>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <inertia ixx="0.00002" ixy="0" ixz="0" iyy="0.00002" iyz="0" izz="0.00002"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <geometry><cylinder radius="0.020" length="0.016"/></geometry>
+      <material name="tire_black"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <geometry><cylinder radius="0.020" length="0.016"/></geometry>
+    </collision>
+  </link>
+  <joint name="front_right_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="front_right_wheel"/>
+    <origin xyz="0.040 -0.048 -0.012" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+  </joint>
+
+  <!-- 4. Rear Right Wheel -->
+  <link name="rear_right_wheel">
+    <inertial>
+      <mass value="0.03"/>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <inertia ixx="0.00002" ixy="0" ixz="0" iyy="0.00002" iyz="0" izz="0.00002"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <geometry><cylinder radius="0.020" length="0.016"/></geometry>
+      <material name="tire_black"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <geometry><cylinder radius="0.020" length="0.016"/></geometry>
+    </collision>
+  </link>
+  <joint name="rear_right_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="rear_right_wheel"/>
+    <origin xyz="-0.040 -0.048 -0.012" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+  </joint>
+
+  <!-- ==================================================== -->
+  <!-- GAZEBO PHYSICS & DIFF DRIVE                          -->
+  <!-- ==================================================== -->
+  <gazebo reference="front_left_wheel"><mu1>2.0</mu1><mu2>2.0</mu2></gazebo>
+  <gazebo reference="rear_left_wheel"><mu1>2.0</mu1><mu2>2.0</mu2></gazebo>
+  <gazebo reference="front_right_wheel"><mu1>2.0</mu1><mu2>2.0</mu2></gazebo>
+  <gazebo reference="rear_right_wheel"><mu1>2.0</mu1><mu2>2.0</mu2></gazebo>
+
+  <gazebo>
+    <plugin filename="gz-sim-diff-drive-system" name="gz::sim::systems::DiffDrive">
+      <left_joint>front_left_joint</left_joint>
+      <left_joint>rear_left_joint</left_joint>
+      <right_joint>front_right_joint</right_joint>
+      <right_joint>rear_right_joint</right_joint>
+      <wheel_separation>0.096</wheel_separation>
+      <wheel_radius>0.020</wheel_radius>
+      <topic>/cmd_vel</topic>
+      <odom_topic>/odom</odom_topic>
+      <tf_topic>/tf</tf_topic>
+      <frame_id>odom</frame_id>
+      <child_frame_id>base_link</child_frame_id>
+      <odom_publish_frequency>50</odom_publish_frequency>
+    </plugin>
+
+    <plugin filename="gz-sim-joint-state-publisher-system" name="gz::sim::systems::JointStatePublisher">
+      <topic>/joint_states</topic>
+      <joint_name>front_left_joint</joint_name>
+      <joint_name>rear_left_joint</joint_name>
+      <joint_name>front_right_joint</joint_name>
+      <joint_name>rear_right_joint</joint_name>
+      <joint_name>arm_joint</joint_name>
+      <joint_name>cup_joint</joint_name>
+      <joint_name>claw_joint</joint_name>
+    </plugin>
+  </gazebo>
+
+  <!-- IMU Sensor -->
+  <gazebo reference="base_link">
+    <sensor name="imu_sensor" type="imu">
+      <always_on>1</always_on>
+      <update_rate>50</update_rate>
+      <visualize>true</visualize>
+      <topic>/imu</topic>
+    </sensor>
+  </gazebo>
+
+</robot>

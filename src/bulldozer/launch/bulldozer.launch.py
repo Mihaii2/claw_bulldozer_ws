@@ -6,18 +6,18 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 
 def generate_launch_description():
-    pkg_flipper_car = get_package_share_directory('flipper_car')
+    pkg_bulldozer = get_package_share_directory('bulldozer')
     pkg_ros_gz_sim = get_package_share_directory('ros_gz_sim')
 
-    urdf_file = os.path.join(pkg_flipper_car, 'urdf', 'flipper_car.urdf')
+    urdf_file = os.path.join(pkg_bulldozer, 'urdf', 'bulldozer.urdf')
     with open(urdf_file, 'r') as infp:
         robot_desc = infp.read()
 
-    world_path = os.path.join(pkg_flipper_car, 'worlds', 'slow_world.sdf')
-    rviz_config_path = os.path.join(pkg_flipper_car, 'rviz', 'flipper_car.rviz')
+    world_path = os.path.join(pkg_bulldozer, 'worlds', 'slow_world.sdf')
+    rviz_config_path = os.path.join(pkg_bulldozer, 'rviz', 'bulldozer.rviz')
     rviz_args = ['-d', rviz_config_path] if os.path.exists(rviz_config_path) else []
 
-    # 1. Gazebo Sim with slow-motion physics
+    # 1. Gazebo Sim
     gz_sim = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(pkg_ros_gz_sim, 'launch', 'gz_sim.launch.py')
@@ -25,24 +25,23 @@ def generate_launch_description():
         launch_arguments={'gz_args': f'-r {world_path}'}.items(),
     )
 
-    # 2. Robot State Publisher
+    # 2. Robot State Publisher (Set use_sim_time: False to prevent startup race condition)
     robot_state_publisher = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
         output='screen',
-        parameters=[{'robot_description': robot_desc, 'use_sim_time': True}]
+        parameters=[{'robot_description': robot_desc, 'use_sim_time': False}]
     )
 
-    # 3. Spawn Robot (Spawn tilted around Pitch Y-axis at -1.45 rad for testing wheelie balance)
-    # Change -P to 0.0 if you want it to drop flat on all 4 wheels first.
+    # 3. Spawn Robot directly from URDF file (-file avoids topic synchronization lockups)
     spawn_robot = Node(
         package='ros_gz_sim',
         executable='create',
-        arguments=['-name', 'flipper_car', '-topic', 'robot_description', '-z', '0.06', '-P', '-1.45'],
+        arguments=['-name', 'bulldozer', '-file', urdf_file, '-z', '0.08'],
         output='screen'
     )
 
-    # 4. Parameter Bridge (Includes /imu for self-balancing)
+    # 4. Parameter Bridge
     bridge = Node(
         package='ros_gz_bridge',
         executable='parameter_bridge',
@@ -60,7 +59,7 @@ def generate_launch_description():
 
     # 5. Trajectory Tracker Node
     trajectory_tracker_node = Node(
-        package='flipper_car',
+        package='bulldozer',
         executable='trajectory_tracker',
         output='screen',
         parameters=[{'use_sim_time': True}]
@@ -73,7 +72,7 @@ def generate_launch_description():
         name='rviz2',
         output='screen',
         arguments=rviz_args,
-        parameters=[{'use_sim_time': True}]
+        parameters=[{'use_sim_time': False}]
     )
 
     return LaunchDescription([

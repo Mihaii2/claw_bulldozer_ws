@@ -2,7 +2,7 @@ import os
 from glob import glob
 from setuptools import find_packages, setup
 
-package_name = 'flipper_car'
+package_name = 'bulldozer'
 
 setup(
     name=package_name,
@@ -16,19 +16,20 @@ setup(
         (os.path.join('share', package_name, 'urdf'), glob('urdf/*.urdf')),
         (os.path.join('share', package_name, 'rviz'), glob('rviz/*.rviz')),
         (os.path.join('share', package_name, 'worlds'), glob('worlds/*.sdf')),
+        (os.path.join('share', package_name, 'meshes'), glob('meshes/*.stl')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='mihai',
     maintainer_email='user@todo.todo',
-    description='Flipper RC Car',
+    description='Bulldozer Claw Robot',
     license='Apache-2.0',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'esp32_controller = flipper_car.esp32_controller:main',
-            'teleop_keyboard = flipper_car.teleop_keyboard:main',
-            'trajectory_tracker = flipper_car.trajectory_tracker:main',
+            'esp32_controller = bulldozer.esp32_controller:main',
+            'teleop_keyboard = bulldozer.teleop_keyboard:main',
+            'trajectory_tracker = bulldozer.trajectory_tracker:main',
         ],
     },
 )
