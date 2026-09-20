@@ -17,33 +17,32 @@
 #include "driver/ledc.h"
 #include "driver/gpio.h"
 #include "esp_http_server.h"
+#include "esp_netif.h"
 
-#define TAG "BULLDOZER_PHONE_CTRL"
+#define TAG "BULLDOZER_CTRL"
 
-// ==========================================
-// === Wi-Fi SoftAP Configuration ===
-// ==========================================
-#define AP_SSID             "Bulldozer_Brain"
-#define AP_PASS             "12345678"
-#define AP_CHANNEL          1
-#define AP_MAX_CONN         4
+// ============================================================
+// === Pune aici datele HOTSPOT-ului de pe Redmi Note 13 Pro ===
+// ============================================================
+#define HOTSPOT_SSID        "My_Redmi"   // Numele hotspot-ului din telefon
+#define HOTSPOT_PASS        "formula1"        // Parola hotspot-ului
+
+static EventGroupHandle_t s_wifi_event_group;
+#define WIFI_CONNECTED_BIT BIT0
 
 // ==========================================
 // === Hardware Pinout Configuration ===
 // ==========================================
-// TC1508 DC Motors
 #define MOTOR_L_IN1         GPIO_NUM_23
 #define MOTOR_L_IN2         GPIO_NUM_22
 #define MOTOR_R_IN3         GPIO_NUM_21
 #define MOTOR_R_IN4         GPIO_NUM_19
 
-// MG995 Servos
 #define LEFT_ARM_PIN        GPIO_NUM_18
 #define RIGHT_ARM_PIN       GPIO_NUM_5
 #define CUP_TILT_PIN        GPIO_NUM_17
 #define CLAW_PIN            GPIO_NUM_16
 
-// LEDC Allocations
 #define CH_SERVO_ARM_L      LEDC_CHANNEL_0
 #define CH_SERVO_ARM_R      LEDC_CHANNEL_1
 #define CH_SERVO_CUP        LEDC_CHANNEL_2
@@ -64,7 +63,6 @@
 #define MOTOR_DUTY_RES      LEDC_TIMER_8_BIT
 #define MOTOR_MAX_DUTY      255
 
-// Calibrated Travel Limits
 #define LEFT_ARM_UP         46.0f
 #define LEFT_ARM_DOWN       132.0f
 #define RIGHT_ARM_UP        124.0f
@@ -75,12 +73,10 @@
 #define CLAW_MIN            20.0f
 #define CLAW_MAX            160.0f
 
-// Safety Watchdog (opreste motoarele dupa 400ms daca nu primeste comanda continua)
 #define DRIVE_TIMEOUT_US    400000 
 static int64_t last_drive_cmd_time = 0;
 static bool motors_active = false;
 
-// Global Actuator Positions
 static float arm_pct    = 90.0f;
 static float cup_angle  = 120.0f; 
 static float claw_angle = 90.0f;  
@@ -104,7 +100,6 @@ static void set_motor_speeds(int left_pwm, int right_pwm) {
     if (right_pwm > 255) right_pwm = 255;
     if (right_pwm < -255) right_pwm = -255;
 
-    // STÂNGA
     if (left_pwm >= 0) {
         ledc_set_duty(LEDC_LOW_SPEED_MODE, CH_MOT_L_IN1, left_pwm);
         ledc_set_duty(LEDC_LOW_SPEED_MODE, CH_MOT_L_IN2, 0);
@@ -113,7 +108,6 @@ static void set_motor_speeds(int left_pwm, int right_pwm) {
         ledc_set_duty(LEDC_LOW_SPEED_MODE, CH_MOT_L_IN2, -left_pwm);
     }
 
-    // DREAPTA
     if (right_pwm >= 0) {
         ledc_set_duty(LEDC_LOW_SPEED_MODE, CH_MOT_R_IN3, 0);
         ledc_set_duty(LEDC_LOW_SPEED_MODE, CH_MOT_R_IN4, right_pwm);
@@ -224,7 +218,7 @@ static void init_actuators(void) {
 }
 
 // ==========================================
-// === Web UI HTML (Servita direct pe telefon) ===
+// === Web UI HTML ===
 // ==========================================
 static const char INDEX_HTML[] = 
 "<!DOCTYPE html><html><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1.0,user-scalable=no'>"
@@ -309,41 +303,57 @@ static void start_control_webserver(void) {
     if (httpd_start(&server, &config) == ESP_OK) {
         httpd_register_uri_handler(server, &index_uri);
         httpd_register_uri_handler(server, &cmd_uri);
-        ESP_LOGI(TAG, "Server Web Control pornit pe port 80!");
+        ESP_LOGI(TAG, "Server Web pornit cu succes!");
     }
 }
 
-// Wi-Fi SoftAP Setup
-static void wifi_init_softap(void) {
+static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data) {
+    if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
+        esp_wifi_connect();
+    } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
+        xEventGroupClearBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
+        ESP_LOGW(TAG, "Deconectat de la telefon. Reconectare...");
+        esp_wifi_connect();
+    } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
+        ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
+        ESP_LOGI(TAG, "==================================================");
+        ESP_LOGI(TAG, "CONECTAT LA TELEFON!");
+        ESP_LOGI(TAG, "Deschide in Chrome pe telefon: http://" IPSTR "/", IP2STR(&event->ip_info.ip));
+        ESP_LOGI(TAG, "==================================================");
+        xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
+    }
+}
+
+static void wifi_init_sta(void) {
+    s_wifi_event_group = xEventGroupCreate();
+
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
-    esp_netif_create_default_wifi_ap();
+    esp_netif_create_default_wifi_sta();
 
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
 
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &wifi_event_handler, NULL, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &wifi_event_handler, NULL, NULL));
+
     wifi_config_t wifi_config = {
-        .ap = {
-            .ssid = AP_SSID,
-            .ssid_len = strlen(AP_SSID),
-            .channel = AP_CHANNEL,
-            .password = AP_PASS,
-            .max_connection = AP_MAX_CONN,
-            .authmode = WIFI_AUTH_WPA2_PSK,
+        .sta = {
+            .ssid = HOTSPOT_SSID,
+            .password = HOTSPOT_PASS,
+            .threshold.authmode = WIFI_AUTH_WPA2_PSK,
         },
     };
 
-    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
-    ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &wifi_config));
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+    ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
     ESP_ERROR_CHECK(esp_wifi_start());
 
     esp_wifi_set_max_tx_power(78);
     ESP_ERROR_CHECK(esp_wifi_set_ps(WIFI_PS_NONE));
 
-    ESP_LOGI(TAG, "==================================================");
-    ESP_LOGI(TAG, "Conecteaza telefonul la: %s (Parola: %s)", AP_SSID, AP_PASS);
-    ESP_LOGI(TAG, "Deschide in Chrome: http://192.168.4.1/");
-    ESP_LOGI(TAG, "==================================================");
+    ESP_LOGI(TAG, "Se conecteaza la hotspot-ul '%s'...", HOTSPOT_SSID);
+    xEventGroupWaitBits(s_wifi_event_group, WIFI_CONNECTED_BIT, pdFALSE, pdTRUE, portMAX_DELAY);
 }
 
 void safety_watchdog_task(void *pvParameters) {
@@ -364,7 +374,11 @@ void app_main(void) {
     ESP_ERROR_CHECK(ret);
 
     init_actuators();
-    wifi_init_softap();
+    
+    // Conecteaza robotul la hotspot-ul telefonului
+    wifi_init_sta();
+
+    // Porneste serverul web de control
     start_control_webserver();
 
     xTaskCreatePinnedToCore(safety_watchdog_task, "watchdog", 2048, NULL, 10, NULL, 1);
