@@ -2,7 +2,7 @@
 
 An autonomous manipulation and earth-moving platform featuring a multi-axis articulating high-torque claw and bucket mechanism, 4WD skid-steer chassis, ESP32 dual-core real-time control, onboard IMU pose tracking, dual camera vision systems, and ROS 2 Jazzy integration.
 
-> 📦 **Hardware Heritage & Lineage Notice:** Core electronics (ESP32 DevKitC, TC1508 H-bridge, GY-BMI160 6-DOF IMU, buck converters) and the baseline micro-ROS architecture were harvested and evolved from the decommissioned [Mihaii2/esp32_bulldozer](https://github.com/Mihaii2/esp32_bulldozer).
+> 📦 **Hardware Heritage & Lineage Notice:** Core electronics (ESP32 DevKitC, TC1508 H-bridge, GY-BMI160 6-DOF IMU, buck converters) and the baseline micro-ROS architecture were harvested and evolved from the decommissioned [Mihaii2/esp32_flipper_car](https://github.com/Mihaii2/esp32_flipper_car).
 
 <div align="center">
   <img src="video/claw_demo.gif" width="75%" alt="Autonomous Claw Bulldozer Actuation & Teleoperation Demo" /><br/>
@@ -42,8 +42,7 @@ An autonomous manipulation and earth-moving platform featuring a multi-axis arti
         <em>Beam-enclosed ESP32-CAM, 5th-servo phone tilter mast, and custom electronics protective cover.</em>
       </td>
       <td align="center" width="33%">
-        <!-- Empty slot for layout balance / future CAD revision -->
-      </td>
+        </td>
     </tr>
   </table>
 </div>
@@ -144,7 +143,7 @@ The primary motherboard is built on a modular composite deck created by joining 
 
 ---
 
-### Legacy Hardware Donor: [Mihaii2/esp32_bulldozer](https://github.com/Mihaii2/esp32_bulldozer)
+### Legacy Hardware Donor: [Mihaii2/esp32_flipper_car](https://github.com/Mihaii2/esp32_flipper_car)
 
 | Component / Module | Specification / Model | Qty | Status in Current Project |
 |---|---|---|---|
@@ -227,9 +226,9 @@ Unified GPIO allocation across motor drive stages, servo PWM channels, and senso
 | **Servos (MG995)** | Cup / Wrist Tilt | `GPIO 17` | `LEDC_CHANNEL_2` | Independent Pitch Mechanism |
 | **Servos (MG995)** | Claw Gripper | `GPIO 16` | `LEDC_CHANNEL_3` | Independent Grip / Release Mechanism |
 | **Servos (MG995)** | Phone Tilter | `GPIO 4` | `LEDC_CHANNEL_4` | Actuated Camera / Phone Pitch Control |
-| **IMU (BMI160)** | `SCL` | `GPIO 32` | `I2C_NUM_0` SCL via JST-XH | Hardware I2C Clock Line[cite: 1] |
-| **IMU (BMI160)** | `SDA` | `GPIO 25` | `I2C_NUM_0` SDA via JST-XH | Hardware I2C Data Line[cite: 1] |
-| **IMU (BMI160)** | `CS` / `SA0` | `3.3V Rail` | Logic High via JST-XH | Forces I2C Mode / Sets Address to `0x69`[cite: 1] |
+| **IMU (BMI160)** | `SCL` | `GPIO 32` | `I2C_NUM_0` SCL via JST-XH | Hardware I2C Clock Line |
+| **IMU (BMI160)** | `SDA` | `GPIO 25` | `I2C_NUM_0` SDA via JST-XH | Hardware I2C Data Line |
+| **IMU (BMI160)** | `CS` / `SA0` | `3.3V Rail` | Logic High via JST-XH | Forces I2C Mode / Sets Address to `0x69` |
 
 > *Note: All MG995 servos utilize `LEDC_TIMER_0` configured for 50 Hz PWM with 14-bit resolution.*
 
