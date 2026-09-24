@@ -63,7 +63,7 @@ An autonomous manipulation and earth-moving platform featuring a multi-axis arti
 >   * **Initial ESP32-CAM Prototype:** Early tests yielded severe frame-drop bottlenecks, latency, and poor visual fidelity under default configurations.
 >   * **Smartphone Mount Pivot:** Designed a dedicated smartphone holder actuated by a 5th MG995 servo on `GPIO 4` to handle primary teleoperation and high-resolution spatial streaming via a mobile device.
 >   * **Dual-Camera Convergence & Custom Enclosure:** Subsequent firmware optimizations, clock adjustments, and memory pipeline tuning substantially stabilized ESP32-CAM stream throughput. Attempting to mount the bare board to the pre-existing overhead beam directly above the claw proved mechanically unviable and structurally awkward. Consequently, engineered a custom dedicated 3D-printed plastic enclosure tailored specifically to house the ESP32-CAM and lock rigidly onto the upper beam assembly. The platform now implements a **dual-vision stack**: an actuated smartphone tilter for primary broad-field telemetry and a ruggedized, enclosed ESP32-CAM for direct manipulation monitoring, alongside an upcoming **8×8 Time-of-Flight (ToF)** distance matrix.
->   * **2S2P High-Current Battery Array:** Simultaneous actuation of five high-torque MG995 metal-gear servos alongside 4WD skid-steer locomotion caused heavy battery rail voltage sag. Doubled battery capacity by placing two additional 18650 Li-ion cells in parallel (**2S2P topology**). The pack maintains nominal **7.4V** while unlocking a massive **20A instantaneous discharge headroom**, preventing logic brownouts during full stall loads.
+>   * **2S2P High-Current Battery Array (Brownout Mitigation):** In the 2-cell configuration, intense multi-joint dynamic actuation (simultaneous 5-servo manipulation alongside aggressive 4WD skid-steer scrubbing) drew more peak current than the pack could sustain. The severe voltage sag triggered brownout resets on the ESP32 logic rail. To resolve this, added two additional 18650 cells wired in parallel (**2S2P topology**). The battery pack maintains nominal **7.4V** while unlocking a massive **20A instantaneous discharge headroom**, ensuring complete electrical stability under full-load operation.
 >   * **RF Range Expansion:** Added dedicated 3dBi external dipole antennas to both the main motherboard ESP32 and the secondary ESP32-CAM to prevent telemetry drops and feed degradation across Wi-Fi.
 >   * **Electronics Enclosure / Cover:** Designed and printed a custom top-shell protective cover shielding the modular quad-perfboard assembly, buck converters, and wiring harness from earth, debris, and direct mechanical impacts during aggressive digging operations.
 
@@ -100,8 +100,8 @@ The primary motherboard is built on a modular composite deck created by joining 
 </div>
 
 ### Modular Wiring, Interconnects & Thermal Hardening
+* **2S2P High-Current Bus Integration:** 4× 18650 cells wired in a 2-series 2-parallel configuration feed nominal 7.4V with 20A continuous discharge potential into the motherboard, fully eliminating inductive voltage dips and preventing the ESP32 from brownout resetting during heavy maneuvers.
 * **Bolted Multi-Board Substrate (M2 Hardware):** Four individual 5cm × 7cm perfboards are mechanically fastened together with M2 nuts and bolts, forming a wide and rigid chassis electronics platform without fragile solder joints bridging structural seams.
-* **2S2P High-Current Bus Integration:** 4× 18650 cells wired in a 2-series 2-parallel configuration feed nominal 7.4V with 20A continuous discharge potential into the motherboard, fully supporting the transient inductive spikes of 5 servos and 4 DC drive motors.
 * **Modular JST-XH Connectors:**
   * **IMU Interconnect:** Male JST-XH pin headers soldered directly to the perfboard carry the 3.3V logic/I2C lines to a mating female connector harness on the GY-BMI160 sensor.
   * **Auxiliary ESP32-CAM Power:** A dedicated perfboard-soldered male JST-XH connector delivers clean 5.0V logic rail power directly from the MP1584EN buck converter to the camera enclosure harness.
@@ -135,7 +135,7 @@ The primary motherboard is built on a modular composite deck created by joining 
 | **Signal Interconnects** | JST-XH 2.54mm Headers & Plugs | 2 | Motherboard male headers + wire plugs for modular IMU bus and ESP32-CAM 5V supply |
 | **Power Interconnects** | 2-Pin Screw Terminal Blocks (5.08mm) | 6 | High-current connections (2x Battery bus input, 4x TT DC Motor outputs) |
 | **Power Decoupling Caps**| $470\,\mu\text{F}$ Electrolytic ($\ge 16\text{V}$) | 2 | Inductive spike and brownout protection (1x on 7.4V battery rail, 1x on 5.0V logic rail) |
-| **Main Battery Pack** | 18650 Li-ion Cells (2S2P / 7.4V Nominal) | 4 | High-discharge power source delivering up to 20A continuous at 7.4V |
+| **Main Battery Pack** | 18650 Li-ion Cells (2S2P / 7.4V Nominal) | 4 | High-discharge power source delivering up to 20A continuous at 7.4V to eliminate MCU resets |
 | **Main Power Switch** | Mini 3-Pin SPDT Toggle Switch | 1 | Master battery circuit cutoff switch |
 | **Electronics Shell** | 3D-Printed Top Bay Enclosure | 1 | Protective cover shielding motherboard, buck regulators, and wiring harness |
 | **Secondary Vision** | ESP32-CAM in Custom 3D Enclosure | 1 | Close-proximity claw inspection; housed in a custom enclosure overcoming beam-mounting limits |
@@ -162,7 +162,7 @@ The primary motherboard is built on a modular composite deck created by joining 
 ## 🛠 Features
 - **Articulated High-Torque Clamping:** 4× MG995 servos providing dual-arm lifting, cup tilting, and active payload grabbing.
 - **Dynamic Perception Mast:** 5th MG995 servo driving an adjustable-pitch smartphone cradle alongside a dedicated, encased ESP32-CAM for dual-angle perception.
-- **2S2P High-Current Power Bus:** 4× 18650 cell array supplying 20A burst capability at 7.4V, guaranteeing brownout-free simultaneous 5-servo manipulation and 4WD drive.
+- **2S2P Anti-Brownout Power Bus:** 4× 18650 cell array supplying 20A continuous headroom at 7.4V, resolving previous ESP32 logic resets during high-strain claw and track maneuvers.
 - **Reinforced M2-Bolted Backbone:** 4-piece perfboard array rigidly locked with M2 hardware, integrated with screw terminals and keyed JST-XH wiring harnesses for modular serviceability.
 - **High-Gain RF Connectivity:** Dual 3dBi external antennas eliminating packet drop on high-bandwidth ROS 2 telemetry and camera streams.
 - **Debris & Impact Shielding:** Custom 3D-printed electronics housing protecting motherboards, buck converters, and connections against soil fallout.
@@ -179,7 +179,7 @@ The primary motherboard is built on a modular composite deck created by joining 
 
 ```mermaid
 graph TD
-    Batt["4x 18650 Battery Array<br/>(2S2P Topology, 7.4V Nominal, 20A Input)"] --> Switch["3-Pin Toggle Switch"]
+    Batt["4x 18650 Battery Array<br/>(2S2P Topology, 7.4V Nominal, 20A Headroom)"] --> Switch["3-Pin Toggle Switch"]
     Switch --> ScrewBatt["2x Screw Terminals<br/>(Main 7.4V Bus)"]
     
     subgraph PowerDistribution["Modular Deck (4x 5x7cm Perfboards Bolted with M2 Hardware)"]
