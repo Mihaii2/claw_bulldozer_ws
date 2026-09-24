@@ -80,7 +80,7 @@ An autonomous manipulation and earth-moving platform featuring a multi-axis arti
 
 ## 🖧 Custom Perfboard Motherboard & Hardware Protection
 
-The primary motherboard is built on a consolidated footprint made by mechanically and electrically bridging **four 5cm × 7cm standard perfboards** into a single modular motherboard. It centralizes logic processing, dual-bus power distribution, RF routing, and comprehensive fault protection:
+The primary motherboard is built on a modular composite deck created by joining **four 5cm × 7cm standard perfboards** mechanically using **M2 nuts and bolts**. This bolted multi-board array provides a rigid, vibration-resistant foundation for point-to-point power rails, sensor buses, RF transceivers, and fault isolation:
 
 <div align="center">
   <table>
@@ -88,18 +88,19 @@ The primary motherboard is built on a consolidated footprint made by mechanicall
       <td align="center" width="50%">
         <img src="photos/perfboard_front.jpg" width="95%" alt="Perfboard Front / Component Placement" /><br/>
         <b>Component Plane (Top Side)</b><br/>
-        <em>Bridged 4-tile perfboard array with ESP32 DevKit, MP1584EN & XL4015 bucks, heatsinked TC1508, screw terminals, JST-XH headers, 5A fuse, and servo bank.</em>
+        <em>M2 bolted 4-tile perfboard array with ESP32 DevKit, MP1584EN & XL4015 bucks, heatsinked TC1508, screw terminals, JST-XH headers, 5A fuse, and servo bank.</em>
       </td>
       <td align="center" width="50%">
         <img src="photos/perfboard_back.jpg" width="95%" alt="Perfboard Back / Solder Traces" /><br/>
         <b>Trace & Solder Plane (Bottom Side)</b><br/>
-        <em>Reinforced copper ground plane, high-current solder bridges linking the 4 sub-boards, and bus decoupling.</em>
+        <em>Reinforced copper ground plane, point-to-point interconnect jumpers across the bolted boards, and logic decoupling.</em>
       </td>
     </tr>
   </table>
 </div>
 
 ### Modular Wiring, Interconnects & Thermal Hardening
+* **Bolted Multi-Board Substrate (M2 Hardware):** Four individual 5cm × 7cm perfboards are mechanically fastened together with M2 nuts and bolts, forming a wide and rigid chassis electronics platform without fragile solder joints bridging structural seams.
 * **2S2P High-Current Bus Integration:** 4× 18650 cells wired in a 2-series 2-parallel configuration feed nominal 7.4V with 20A continuous discharge potential into the motherboard, fully supporting the transient inductive spikes of 5 servos and 4 DC drive motors.
 * **Modular JST-XH Connectors:**
   * **IMU Interconnect:** Male JST-XH pin headers soldered directly to the perfboard carry the 3.3V logic/I2C lines to a mating female connector harness on the GY-BMI160 sensor.
@@ -125,7 +126,8 @@ The primary motherboard is built on a consolidated footprint made by mechanicall
 | **Motor Driver** | TC1508 / MX1508 Dual H-Bridge | 1 | 4-channel DC driver ($2.0\text{V} - 9.6\text{V}$, $1.5\text{A}$ peak/ch) retrofitted with an extruded aluminum radiator |
 | **DC Drive Motors** | TT Gearbox DC Motors (3V–9V) | 4 | Chassis locomotion (2x Left, 2x Right in parallel; *all-metal 1:90 6V reduction gearboxes purchased for swap*) |
 | **High-Torque Servos** | TowerPro MG995 Metal-Gear | 5 | Actuation: Dual synced arm lift, bucket tilt, claw grip, and phone tilter mechanism |
-| **Motherboard Substrate** | 5cm × 7cm Single-Sided Perfboards | 4 | Bridged together into a unified, reinforced composite electronics deck |
+| **Motherboard Substrate** | 5cm × 7cm Single-Sided Perfboards | 4 | Mechanically bolted together with M2 nuts & bolts into a unified composite deck |
+| **Board Assembly Fasteners**| M2 Screws & Hex Nuts | Multi | Mechanical inter-board anchoring linking the four perfboards rigidly |
 | **Logic Step-Down** | MP1584EN Buck Converter | 1 | Regulates 7.4V battery pack down to stable 5.0V for ESP32 VIN & ESP32-CAM |
 | **Servo Step-Down** | XL4015 High-Current Buck Converter | 1 | High-capacity DC-DC step down (7.4V to 6.0V, $\ge 5\text{A}$) dedicated to MG995 servo array |
 | **Logic Isolation** | $1\,\text{k}\Omega$ Resistors (Through-Hole) | 4 | Inline current-limiting protection on MCU-to-TC1508 logic control lines |
@@ -161,7 +163,7 @@ The primary motherboard is built on a consolidated footprint made by mechanicall
 - **Articulated High-Torque Clamping:** 4× MG995 servos providing dual-arm lifting, cup tilting, and active payload grabbing.
 - **Dynamic Perception Mast:** 5th MG995 servo driving an adjustable-pitch smartphone cradle alongside a dedicated, encased ESP32-CAM for dual-angle perception.
 - **2S2P High-Current Power Bus:** 4× 18650 cell array supplying 20A burst capability at 7.4V, guaranteeing brownout-free simultaneous 5-servo manipulation and 4WD drive.
-- **Reinforced Modular Backbone:** 4-piece bridged perfboard array with secure screw terminals and keyed JST-XH wiring harnesses for modular serviceability.
+- **Reinforced M2-Bolted Backbone:** 4-piece perfboard array rigidly locked with M2 hardware, integrated with screw terminals and keyed JST-XH wiring harnesses for modular serviceability.
 - **High-Gain RF Connectivity:** Dual 3dBi external antennas eliminating packet drop on high-bandwidth ROS 2 telemetry and camera streams.
 - **Debris & Impact Shielding:** Custom 3D-printed electronics housing protecting motherboards, buck converters, and connections against soil fallout.
 - **Fail-Safe Electrical Design:** Perfboard-soldered 5A car blade fuse, $4\times 1\,\text{k}\Omega$ MCU gate isolation resistors, and an aluminum thermal radiator preventing driver burnout.
@@ -180,7 +182,7 @@ graph TD
     Batt["4x 18650 Battery Array<br/>(2S2P Topology, 7.4V Nominal, 20A Input)"] --> Switch["3-Pin Toggle Switch"]
     Switch --> ScrewBatt["2x Screw Terminals<br/>(Main 7.4V Bus)"]
     
-    subgraph PowerDistribution["Modular Deck (4x Bridged 5x7cm Perfboards)"]
+    subgraph PowerDistribution["Modular Deck (4x 5x7cm Perfboards Bolted with M2 Hardware)"]
         ScrewBatt --> Cap1["470uF Bulk Filter"]
         Cap1 --> XL4015["XL4015 Buck Converter<br/>(Steps down to 6.0V, 5A Peak)"]
         Cap1 --> MP1584["MP1584EN Buck Converter<br/>(Steps down to 5.0V)"]
