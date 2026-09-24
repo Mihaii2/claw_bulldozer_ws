@@ -81,12 +81,6 @@ static float arm_pct    = 90.0f;
 static float cup_angle  = 120.0f; 
 static float claw_angle = 90.0f;  
 
-static int current_gear = 1;
-
-#define DUTY_55_PCT         140
-#define DUTY_75_PCT         191
-#define DUTY_100_PCT        255
-
 static inline uint32_t angle_to_ticks(float angle) {
     if (angle < 0.0f) angle = 0.0f;
     if (angle > 180.0f) angle = 180.0f;
@@ -226,19 +220,21 @@ static const char INDEX_HTML[] =
 "body{background:#1a1a1a;color:#eee;font-family:sans-serif;text-align:center;margin:0;padding:10px;user-select:none;touch-action:manipulation;}"
 "h2{margin:5px 0 15px 0;color:#f39c12;}"
 ".grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:300px;margin:0 auto 20px auto;}"
-"button{background:#333;color:#fff;border:2px solid #555;padding:20px;font-size:18px;border-radius:12px;font-weight:bold;}"
+"button{background:#333;color:#fff;border:2px solid #555;padding:20px;font-size:18px;border-radius:12px;font-weight:bold;cursor:pointer;}"
 "button:active{background:#f39c12;color:#000;}"
 ".arm-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-width:300px;margin:0 auto;}"
 ".btn-arm{background:#2c3e50;padding:15px;}"
 ".btn-stop{background:#c0392b;border-color:#e74c3c;}"
+".hint{color:#888;font-size:13px;margin-bottom:15px;}"
 "</style></head><body>"
 "<h2>🚜 Bulldozer Control</h2>"
+"<div class='hint'>Use buttons or WASD / Arrow Keys</div>"
 "<div class='grid'>"
-"<div></div><button onpointerdown=\"send('FORWARD')\" onpointerup=\"send('STOP')\">▲</button><div></div>"
-"<button onpointerdown=\"send('SPIN_LEFT')\" onpointerup=\"send('STOP')\">◄</button>"
-"<button class='btn-stop' onclick=\"send('STOP')\">■</button>"
-"<button onpointerdown=\"send('SPIN_RIGHT')\" onpointerup=\"send('STOP')\">►</button>"
-"<div></div><button onpointerdown=\"send('REVERSE')\" onpointerup=\"send('STOP')\">▼</button><div></div>"
+"<div></div><button onpointerdown=\"startHold('FORWARD')\" onpointerup=\"stopHold()\" onpointerleave=\"stopHold()\">▲</button><div></div>"
+"<button onpointerdown=\"startHold('SPIN_LEFT')\" onpointerup=\"stopHold()\" onpointerleave=\"stopHold()\">◄</button>"
+"<button class='btn-stop' onclick=\"stopHold()\">■</button>"
+"<button onpointerdown=\"startHold('SPIN_RIGHT')\" onpointerup=\"stopHold()\" onpointerleave=\"stopHold()\">►</button>"
+"<div></div><button onpointerdown=\"startHold('REVERSE')\" onpointerup=\"stopHold()\" onpointerleave=\"stopHold()\">▼</button><div></div>"
 "</div>"
 "<h3>Manipulator</h3>"
 "<div class='arm-grid'>"
@@ -247,7 +243,49 @@ static const char INDEX_HTML[] =
 "<button class='btn-arm' onclick=\"send('CLAW_OPEN')\">Claw ◄►</button><button class='btn-arm' onclick=\"send('CLAW_CLOSE')\">Claw ►◄</button>"
 "</div>"
 "<script>"
+"let driveInterval = null;"
+"let activeCmd = null;"
+
 "function send(cmd){fetch('/cmd?action='+cmd);}"
+
+"function startHold(cmd){"
+"  if(activeCmd === cmd) return;"
+"  stopHold();"
+"  activeCmd = cmd;"
+"  send(cmd);"
+"  driveInterval = setInterval(()=>{ send(cmd); }, 100);"
+"}"
+
+"function stopHold(){"
+"  if(driveInterval){"
+"    clearInterval(driveInterval);"
+"    driveInterval = null;"
+"  }"
+"  if(activeCmd !== null){"
+"    activeCmd = null;"
+"    send('STOP');"
+"  }"
+"}"
+
+"const keyMap = {"
+"  'KeyW':'FORWARD','ArrowUp':'FORWARD',"
+"  'KeyS':'REVERSE','ArrowDown':'REVERSE',"
+"  'KeyA':'SPIN_LEFT','ArrowLeft':'SPIN_LEFT',"
+"  'KeyD':'SPIN_RIGHT','ArrowRight':'SPIN_RIGHT'"
+"};"
+
+"window.addEventListener('keydown', (e)=>{"
+"  if(e.repeat) return;"
+"  const cmd = keyMap[e.code];"
+"  if(cmd) startHold(cmd);"
+"});"
+
+"window.addEventListener('keyup', (e)=>{"
+"  const cmd = keyMap[e.code];"
+"  if(cmd && activeCmd === cmd) stopHold();"
+"});"
+
+"window.addEventListener('blur', ()=> stopHold());"
 "</script></body></html>";
 
 static esp_err_t index_handler(httpd_req_t *req) {
@@ -262,10 +300,9 @@ static esp_err_t cmd_handler(httpd_req_t *req) {
         if (httpd_req_get_url_query_str(req, buf, buf_len) == ESP_OK) {
             char action[32];
             if (httpd_query_key_value(buf, "action", action, sizeof(action)) == ESP_OK) {
-                int straight_duty = (current_gear == 1) ? DUTY_55_PCT : (current_gear == 2 ? DUTY_75_PCT : DUTY_100_PCT);
-                
-                if (strcmp(action, "FORWARD") == 0) set_motor_speeds(straight_duty, straight_duty);
-                else if (strcmp(action, "REVERSE") == 0) set_motor_speeds(-straight_duty, -straight_duty);
+                // Both forward and reverse now run at 100% PWM (255)
+                if (strcmp(action, "FORWARD") == 0) set_motor_speeds(MOTOR_MAX_DUTY, MOTOR_MAX_DUTY);
+                else if (strcmp(action, "REVERSE") == 0) set_motor_speeds(-MOTOR_MAX_DUTY, -MOTOR_MAX_DUTY);
                 else if (strcmp(action, "SPIN_LEFT") == 0) set_motor_speeds(MOTOR_MAX_DUTY, -MOTOR_MAX_DUTY);
                 else if (strcmp(action, "SPIN_RIGHT") == 0) set_motor_speeds(-MOTOR_MAX_DUTY, MOTOR_MAX_DUTY);
                 else if (strcmp(action, "STOP") == 0) drive_stop();
