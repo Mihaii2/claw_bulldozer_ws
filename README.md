@@ -59,11 +59,13 @@ An autonomous manipulation and earth-moving platform featuring a multi-axis arti
 >   * **Wheel Dimensional Scaling:** Replaced oversized 45mm-radius wheel collisions with realistic 20mm-radius (40mm diameter) hubs recessed directly into the chassis axle slots for accurate Gazebo physics and ground clearance.
 >   * **Pivot & Scrubbing Firmware Mitigation:** Tuned the differential drive turning profile across all speed gears to supply 100% PWM (255) to the outside wheels and 0% PWM to the inside wheels during turns, breaking lateral static friction without stalling the motors.
 >   * **Drivetrain Upgrade Roadmap:** Acquired **all-metal TT 1:90 6V reduction gearboxes** to replace the stock yellow plastic units, delivering substantial low-end torque for heavy earth-moving without risk of gear-tooth shearing.
-> * **v5.0 (Perception, Dual-Vision & Electronics Shielding — Current Hardware):**
+> * **v5.0 (Perception, High-Current Power & Electronics Shielding — Current Hardware):**
 >   * **Initial ESP32-CAM Prototype:** Early tests yielded severe frame-drop bottlenecks, latency, and poor visual fidelity under default configurations.
 >   * **Smartphone Mount Pivot:** Designed a dedicated smartphone holder actuated by a 5th MG995 servo on `GPIO 4` to handle primary teleoperation and high-resolution spatial streaming via a mobile device.
 >   * **Dual-Camera Convergence & Custom Enclosure:** Subsequent firmware optimizations, clock adjustments, and memory pipeline tuning substantially stabilized ESP32-CAM stream throughput. Attempting to mount the bare board to the pre-existing overhead beam directly above the claw proved mechanically unviable and structurally awkward. Consequently, engineered a custom dedicated 3D-printed plastic enclosure tailored specifically to house the ESP32-CAM and lock rigidly onto the upper beam assembly. The platform now implements a **dual-vision stack**: an actuated smartphone tilter for primary broad-field telemetry and a ruggedized, enclosed ESP32-CAM for direct manipulation monitoring, alongside an upcoming **8×8 Time-of-Flight (ToF)** distance matrix.
->   * **Electronics Enclosure / Cover:** Designed and printed a custom top-shell protective cover shielding the exposed perfboard motherboard, buck converters, and wiring harness from earth, debris, and direct mechanical impacts during aggressive digging operations.
+>   * **2S2P High-Current Battery Array:** Simultaneous actuation of five high-torque MG995 metal-gear servos alongside 4WD skid-steer locomotion caused heavy battery rail voltage sag. Doubled battery capacity by placing two additional 18650 Li-ion cells in parallel (**2S2P topology**). The pack maintains nominal **7.4V** while unlocking a massive **20A instantaneous discharge headroom**, preventing logic brownouts during full stall loads.
+>   * **RF Range Expansion:** Added dedicated 3dBi external dipole antennas to both the main motherboard ESP32 and the secondary ESP32-CAM to prevent telemetry drops and feed degradation across Wi-Fi.
+>   * **Electronics Enclosure / Cover:** Designed and printed a custom top-shell protective cover shielding the modular quad-perfboard assembly, buck converters, and wiring harness from earth, debris, and direct mechanical impacts during aggressive digging operations.
 
 ---
 
@@ -78,7 +80,7 @@ An autonomous manipulation and earth-moving platform featuring a multi-axis arti
 
 ## 🖧 Custom Perfboard Motherboard & Hardware Protection
 
-Custom hand-soldered point-to-point perfboard centralizing logic processing, power distribution, actuation buses, and critical fault protection:
+The primary motherboard is built on a consolidated footprint made by mechanically and electrically bridging **four 5cm × 7cm standard perfboards** into a single modular motherboard. It centralizes logic processing, dual-bus power distribution, RF routing, and comprehensive fault protection:
 
 <div align="center">
   <table>
@@ -86,18 +88,25 @@ Custom hand-soldered point-to-point perfboard centralizing logic processing, pow
       <td align="center" width="50%">
         <img src="photos/perfboard_front.jpg" width="95%" alt="Perfboard Front / Component Placement" /><br/>
         <b>Component Plane (Top Side)</b><br/>
-        <em>ESP32 DevKit socket, MP1584EN & XL4015 buck modules, 470µF rail caps, heatsinked TC1508 driver, 1kΩ isolation resistors, perfboard-soldered 5A automotive blade fuse, and servo headers (shielded beneath the v5.0 protective electronics cover).</em>
+        <em>Bridged 4-tile perfboard array with ESP32 DevKit, MP1584EN & XL4015 bucks, heatsinked TC1508, screw terminals, JST-XH headers, 5A fuse, and servo bank.</em>
       </td>
       <td align="center" width="50%">
         <img src="photos/perfboard_back.jpg" width="95%" alt="Perfboard Back / Solder Traces" /><br/>
         <b>Trace & Solder Plane (Bottom Side)</b><br/>
-        <em>Reinforced high-current ground plane, bus routing, logic decoupling, and direct solder bridges.</em>
+        <em>Reinforced copper ground plane, high-current solder bridges linking the 4 sub-boards, and bus decoupling.</em>
       </td>
     </tr>
   </table>
 </div>
 
-### Thermal & Electrical Fault Hardening
+### Modular Wiring, Interconnects & Thermal Hardening
+* **2S2P High-Current Bus Integration:** 4× 18650 cells wired in a 2-series 2-parallel configuration feed nominal 7.4V with 20A continuous discharge potential into the motherboard, fully supporting the transient inductive spikes of 5 servos and 4 DC drive motors.
+* **Modular JST-XH Connectors:**
+  * **IMU Interconnect:** Male JST-XH pin headers soldered directly to the perfboard carry the 3.3V logic/I2C lines to a mating female connector harness on the GY-BMI160 sensor.
+  * **Auxiliary ESP32-CAM Power:** A dedicated perfboard-soldered male JST-XH connector delivers clean 5.0V logic rail power directly from the MP1584EN buck converter to the camera enclosure harness.
+* **Screw Terminal Power & Motor Distribution:**
+  * **Battery Bus:** 2× 2-pin PCB screw terminal blocks securely anchor the high-current 7.4V battery input and master return paths without relying on fragile jumper pins.
+  * **DC Locomotion:** 4× 2-pin PCB screw terminal blocks connect the left and right drive motor leads directly to the TC1508 motor driver outputs.
 * **Active Driver Heat Dissipation:** Under sustained skid-steer scrubbing, the TC1508 motor driver frequently entered internal thermal shutdown. An extruded aluminum heatsink/radiator was thermal-bonded to the IC package, eliminating thermal throttling during stall torque scenarios.
 * **MCU Pin Isolation ($4\times 1\,\text{k}\Omega$ Resistors):** Dedicated $1\,\text{k}\Omega$ series current-limiting resistors were installed on every logic trace connecting the ESP32 GPIOs to the TC1508 inputs (`IN1`–`IN4`). If the H-bridge suffers catastrophic shoot-through or internal shorting to the motor supply rail, these resistors prevent high voltage from back-feeding and frying the ESP32 silicon.
 * **5A Automotive Blade Fuse:** A standard 5A car blade fuse was soldered directly to the perfboard immediately downstream of the main power switch on the positive line feeding the TC1508 motor rail, isolating full-system shorts and protecting the battery pack from catastrophic damage.
@@ -111,16 +120,20 @@ Custom hand-soldered point-to-point perfboard centralizing logic processing, pow
 | Component / Module | Specification / Model | Qty | Description / Role |
 |---|---|---|---|
 | **Microcontroller** | ESP32 DevKitC V4 (SuooTci / USB) | 1 | Core logic, FreeRTOS tasks, PWM Generation, I2C IMU polling & Micro-ROS bridge |
+| **RF Transceivers** | 2.4GHz 3dBi Omni Antennas | 2 | High-gain external antennas on U.FL/SMA pig-tails (1x DevKitC, 1x ESP32-CAM) |
 | **IMU Sensor** | Bosch GY-BMI160 (6-DOF) | 1 | 3-axis gyro + 3-axis accelerometer for chassis orientation and terrain profiling |
 | **Motor Driver** | TC1508 / MX1508 Dual H-Bridge | 1 | 4-channel DC driver ($2.0\text{V} - 9.6\text{V}$, $1.5\text{A}$ peak/ch) retrofitted with an extruded aluminum radiator |
 | **DC Drive Motors** | TT Gearbox DC Motors (3V–9V) | 4 | Chassis locomotion (2x Left, 2x Right in parallel; *all-metal 1:90 6V reduction gearboxes purchased for swap*) |
 | **High-Torque Servos** | TowerPro MG995 Metal-Gear | 5 | Actuation: Dual synced arm lift, bucket tilt, claw grip, and phone tilter mechanism |
-| **Logic Step-Down** | MP1584EN Buck Converter | 1 | Regulates 7.4V battery pack down to stable 5.0V for ESP32 VIN |
+| **Motherboard Substrate** | 5cm × 7cm Single-Sided Perfboards | 4 | Bridged together into a unified, reinforced composite electronics deck |
+| **Logic Step-Down** | MP1584EN Buck Converter | 1 | Regulates 7.4V battery pack down to stable 5.0V for ESP32 VIN & ESP32-CAM |
 | **Servo Step-Down** | XL4015 High-Current Buck Converter | 1 | High-capacity DC-DC step down (7.4V to 6.0V, $\ge 5\text{A}$) dedicated to MG995 servo array |
 | **Logic Isolation** | $1\,\text{k}\Omega$ Resistors (Through-Hole) | 4 | Inline current-limiting protection on MCU-to-TC1508 logic control lines |
 | **Circuit Fuse** | Standard Automotive Blade Fuse (5A) | 1 | Car blade fuse soldered directly to perfboard on the TC1508 7.4V battery input rail |
+| **Signal Interconnects** | JST-XH 2.54mm Headers & Plugs | 2 | Motherboard male headers + wire plugs for modular IMU bus and ESP32-CAM 5V supply |
+| **Power Interconnects** | 2-Pin Screw Terminal Blocks (5.08mm) | 6 | High-current connections (2x Battery bus input, 4x TT DC Motor outputs) |
 | **Power Decoupling Caps**| $470\,\mu\text{F}$ Electrolytic ($\ge 16\text{V}$) | 2 | Inductive spike and brownout protection (1x on 7.4V battery rail, 1x on 5.0V logic rail) |
-| **Main Battery** | 18650 Li-ion Cells (2S / 7.4V Nominal) | 2 | Main power source for locomotion, logic, and servo banks |
+| **Main Battery Pack** | 18650 Li-ion Cells (2S2P / 7.4V Nominal) | 4 | High-discharge power source delivering up to 20A continuous at 7.4V |
 | **Main Power Switch** | Mini 3-Pin SPDT Toggle Switch | 1 | Master battery circuit cutoff switch |
 | **Electronics Shell** | 3D-Printed Top Bay Enclosure | 1 | Protective cover shielding motherboard, buck regulators, and wiring harness |
 | **Secondary Vision** | ESP32-CAM in Custom 3D Enclosure | 1 | Close-proximity claw inspection; housed in a custom enclosure overcoming beam-mounting limits |
@@ -147,6 +160,9 @@ Custom hand-soldered point-to-point perfboard centralizing logic processing, pow
 ## 🛠 Features
 - **Articulated High-Torque Clamping:** 4× MG995 servos providing dual-arm lifting, cup tilting, and active payload grabbing.
 - **Dynamic Perception Mast:** 5th MG995 servo driving an adjustable-pitch smartphone cradle alongside a dedicated, encased ESP32-CAM for dual-angle perception.
+- **2S2P High-Current Power Bus:** 4× 18650 cell array supplying 20A burst capability at 7.4V, guaranteeing brownout-free simultaneous 5-servo manipulation and 4WD drive.
+- **Reinforced Modular Backbone:** 4-piece bridged perfboard array with secure screw terminals and keyed JST-XH wiring harnesses for modular serviceability.
+- **High-Gain RF Connectivity:** Dual 3dBi external antennas eliminating packet drop on high-bandwidth ROS 2 telemetry and camera streams.
 - **Debris & Impact Shielding:** Custom 3D-printed electronics housing protecting motherboards, buck converters, and connections against soil fallout.
 - **Fail-Safe Electrical Design:** Perfboard-soldered 5A car blade fuse, $4\times 1\,\text{k}\Omega$ MCU gate isolation resistors, and an aluminum thermal radiator preventing driver burnout.
 - **Dual-Rail Isolated Power Distribution:** High-current XL4015 buck converter isolates heavy servo inductive back-EMF from the ESP32 logic rail.
@@ -161,29 +177,33 @@ Custom hand-soldered point-to-point perfboard centralizing logic processing, pow
 
 ```mermaid
 graph TD
-    Batt["2S 18650 Battery Pack<br/>(7.4V Nominal)"] --> Switch["3-Pin Toggle Switch"]
+    Batt["4x 18650 Battery Array<br/>(2S2P Topology, 7.4V Nominal, 20A Input)"] --> Switch["3-Pin Toggle Switch"]
+    Switch --> ScrewBatt["2x Screw Terminals<br/>(Main 7.4V Bus)"]
     
-    subgraph PowerDistribution["Power Distribution (Protected Bay)"]
-        Switch --> Cap1["470uF Bulk Filter"]
+    subgraph PowerDistribution["Modular Deck (4x Bridged 5x7cm Perfboards)"]
+        ScrewBatt --> Cap1["470uF Bulk Filter"]
         Cap1 --> XL4015["XL4015 Buck Converter<br/>(Steps down to 6.0V, 5A Peak)"]
         Cap1 --> MP1584["MP1584EN Buck Converter<br/>(Steps down to 5.0V)"]
-        Switch --> Fuse["5A Automotive Blade Fuse<br/>(Soldered to Perfboard)"]
+        ScrewBatt --> Fuse["5A Car Blade Fuse<br/>(Soldered to Perfboard)"]
         MP1584 --> Cap2["470uF Logic Filter"]
+        MP1584 --> JST_Cam["JST-XH 5V Power Connector"]
     end
 
-    subgraph Actuators["High-Current Actuators"]
+    subgraph Actuators["High-Current Actuation"]
         XL4015 -->|"6.0V Rail"| Servos["5x MG995 Servos<br/>(Arm Sync, Cup, Claw, Phone Tilter)"]
         Fuse -->|"Protected 7.4V Rail"| TC1508["TC1508 H-Bridge<br/>(+ Radiator / Heatsink)"]
-        TC1508 --> TT_Motors["4x TT Motors<br/>(Skid-Steer Locomotion)"]
+        TC1508 --> ScrewMotors["4x Screw Terminals"]
+        ScrewMotors --> TT_Motors["4x TT Motors<br/>(Skid-Steer Locomotion)"]
     end
 
     subgraph LogicAndSensors["Logic & Processing Plane (Cover Enclosure)"]
-        Cap2 -->|"5.0V VIN"| ESP32["ESP32 DevKitC V4"]
-        ESP32 -->|"3.3V Rail"| BMI160["Bosch GY-BMI160 (6-DOF IMU)"]
+        Cap2 -->|"5.0V VIN"| ESP32["ESP32 DevKitC V4<br/>(+ 3dBi Antenna)"]
+        ESP32 -->|"JST-XH Harness (3.3V/I2C)"| BMI160["Bosch GY-BMI160 (6-DOF IMU)"]
         ESP32 -->|"PWM Control (LEDC)"| Servos
         ESP32 -->|"4x 1k Series Resistors"| TC1508
         ESP32 -.->|"Future Expansion"| ToF["8x8 ToF Matrix Sensor"]
-        ESP32Cam["ESP32-CAM (Enclosed)"] -.->|"WLAN Stream"| ROS2["ROS 2 Ecosystem"]
+        JST_Cam --> ESP32Cam["ESP32-CAM in Custom Enclosure<br/>(+ 3dBi Antenna)"]
+        ESP32Cam -.->|"WLAN Stream"| ROS2["ROS 2 Ecosystem"]
         Phone["Smartphone (Tilter Mount)"] -.->|"WebRTC / RTSP"| ROS2
     end
 ```
@@ -205,9 +225,9 @@ Unified GPIO allocation across motor drive stages, servo PWM channels, and senso
 | **Servos (MG995)** | Cup / Wrist Tilt | `GPIO 17` | `LEDC_CHANNEL_2` | Independent Pitch Mechanism |
 | **Servos (MG995)** | Claw Gripper | `GPIO 16` | `LEDC_CHANNEL_3` | Independent Grip / Release Mechanism |
 | **Servos (MG995)** | Phone Tilter | `GPIO 4` | `LEDC_CHANNEL_4` | Actuated Camera / Phone Pitch Control |
-| **IMU (BMI160)** | `SCL` | `GPIO 32` | `I2C_NUM_0` SCL | Hardware I2C Clock Line[cite: 1] |
-| **IMU (BMI160)** | `SDA` | `GPIO 25` | `I2C_NUM_0` SDA | Hardware I2C Data Line[cite: 1] |
-| **IMU (BMI160)** | `CS` / `SA0` | `3.3V Rail` | Logic High | Forces I2C Mode / Sets Address to `0x69`[cite: 1] |
+| **IMU (BMI160)** | `SCL` | `GPIO 32` | `I2C_NUM_0` SCL via JST-XH | Hardware I2C Clock Line[cite: 1] |
+| **IMU (BMI160)** | `SDA` | `GPIO 25` | `I2C_NUM_0` SDA via JST-XH | Hardware I2C Data Line[cite: 1] |
+| **IMU (BMI160)** | `CS` / `SA0` | `3.3V Rail` | Logic High via JST-XH | Forces I2C Mode / Sets Address to `0x69`[cite: 1] |
 
 > *Note: All MG995 servos utilize `LEDC_TIMER_0` configured for 50 Hz PWM with 14-bit resolution.*
 
