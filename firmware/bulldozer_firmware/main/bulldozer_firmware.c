@@ -22,16 +22,16 @@
 #define TAG "BULLDOZER_CTRL"
 
 // ============================================================
-// === Pune aici datele HOTSPOT-ului de pe Redmi Note 13 Pro ===
+// === Date HOTSPOT Redmi Note 13 Pro =========================
 // ============================================================
-#define HOTSPOT_SSID        "My_Redmi"   // Numele hotspot-ului din telefon
-#define HOTSPOT_PASS        "formula1"        // Parola hotspot-ului
+#define HOTSPOT_SSID        "My_Redmi"
+#define HOTSPOT_PASS        "formula1"
 
 static EventGroupHandle_t s_wifi_event_group;
 #define WIFI_CONNECTED_BIT BIT0
 
 // ==========================================
-// === Hardware Pinout Configuration ===
+// === Hardware Pinout Configuration ========
 // ==========================================
 #define MOTOR_L_IN1         GPIO_NUM_23
 #define MOTOR_L_IN2         GPIO_NUM_22
@@ -178,14 +178,11 @@ static void init_actuators(void) {
     };
     ESP_ERROR_CHECK(ledc_timer_config(&motor_t));
 
-    float init_l = LEFT_ARM_DOWN  + 0.9f * (LEFT_ARM_UP - LEFT_ARM_DOWN);
-    float init_r = RIGHT_ARM_DOWN + 0.9f * (RIGHT_ARM_UP - RIGHT_ARM_DOWN);
-
     ledc_channel_config_t servos[] = {
-        { .gpio_num = LEFT_ARM_PIN,  .channel = CH_SERVO_ARM_L, .duty = angle_to_ticks(init_l) },
-        { .gpio_num = RIGHT_ARM_PIN, .channel = CH_SERVO_ARM_R, .duty = angle_to_ticks(init_r) },
-        { .gpio_num = CUP_TILT_PIN,  .channel = CH_SERVO_CUP,   .duty = angle_to_ticks(cup_angle) },
-        { .gpio_num = CLAW_PIN,      .channel = CH_SERVO_CLAW,  .duty = angle_to_ticks(claw_angle) },
+        { .gpio_num = LEFT_ARM_PIN,  .channel = CH_SERVO_ARM_L, .duty = 0 },
+        { .gpio_num = RIGHT_ARM_PIN, .channel = CH_SERVO_ARM_R, .duty = 0 },
+        { .gpio_num = CUP_TILT_PIN,  .channel = CH_SERVO_CUP,   .duty = 0 },
+        { .gpio_num = CLAW_PIN,      .channel = CH_SERVO_CLAW,  .duty = 0 },
     };
     for (int i = 0; i < 4; i++) {
         servos[i].speed_mode = LEDC_LOW_SPEED_MODE;
@@ -209,10 +206,15 @@ static void init_actuators(void) {
         motors[i].hpoint     = 0;
         ESP_ERROR_CHECK(ledc_channel_config(&motors[i]));
     }
+
+    // Force actuators directly into ready pose at boot (even before Wi-Fi connects)
+    apply_arm_sync(90.0f);
+    apply_cup(120.0f);
+    apply_claw(90.0f);
 }
 
 // ==========================================
-// === Web UI HTML ===
+// === Web UI HTML ==========================
 // ==========================================
 static const char INDEX_HTML[] = 
 "<!DOCTYPE html><html><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1.0,user-scalable=no'>"
@@ -300,7 +302,6 @@ static esp_err_t cmd_handler(httpd_req_t *req) {
         if (httpd_req_get_url_query_str(req, buf, buf_len) == ESP_OK) {
             char action[32];
             if (httpd_query_key_value(buf, "action", action, sizeof(action)) == ESP_OK) {
-                // Both forward and reverse now run at 100% PWM (255)
                 if (strcmp(action, "FORWARD") == 0) set_motor_speeds(MOTOR_MAX_DUTY, MOTOR_MAX_DUTY);
                 else if (strcmp(action, "REVERSE") == 0) set_motor_speeds(-MOTOR_MAX_DUTY, -MOTOR_MAX_DUTY);
                 else if (strcmp(action, "SPIN_LEFT") == 0) set_motor_speeds(MOTOR_MAX_DUTY, -MOTOR_MAX_DUTY);
@@ -366,6 +367,8 @@ static void wifi_init_sta(void) {
 
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
+
+    // Automatically request an IP from the phone via DHCP
     esp_netif_create_default_wifi_sta();
 
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
@@ -410,12 +413,13 @@ void app_main(void) {
     }
     ESP_ERROR_CHECK(ret);
 
+    // Servos snap into position right here
     init_actuators();
     
-    // Conecteaza robotul la hotspot-ul telefonului
+    // Connect to phone hotspot
     wifi_init_sta();
 
-    // Porneste serverul web de control
+    // Start local webserver on port 80
     start_control_webserver();
 
     xTaskCreatePinnedToCore(safety_watchdog_task, "watchdog", 2048, NULL, 10, NULL, 1);
