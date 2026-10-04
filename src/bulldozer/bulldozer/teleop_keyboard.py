@@ -7,20 +7,21 @@ from pynput import keyboard
 
 BANNER = """
 =======================================================
- 🚜 BULLDOZER CLAW ROS 2 TELEOP (FULL DUPLEX)
+ 🚜 BULLDOZER CLAW ROS 2 TELEOP (2-GEAR MODE)
 =======================================================
  Drive (Left Hand):
     [W] Forward    [S] Reverse    [A] Left    [D] Right
     Combinations (W+A, W+D, S+A, S+D) Supported.
 
  Gears:
-    [1] 55% PWM    [2] 75% PWM    [3] 100% PWM
-    [SHIFT] Hold for 100% Boost
+    [1] Gear 1 (65% PWM)
+    [2] Gear 2 (100% PWM - DEFAULT)
 
- Arm / Cup / Claw (Hold to move continuously):
-    [U] Cup Down   [J] Cup Up
+ Arm / Cup / Claw / Phone:
     [I] Arm Up     [K] Arm Down
-    [O] Claw Open  [L] Claw Close
+    [U] Cup Up     [J] Cup Down
+    [O] Claw Close [L] Claw Open
+    [H] Phone Up   [Y] Phone Down
 
  [CTRL-C] : Quit
 =======================================================
@@ -32,21 +33,30 @@ class BulldozerTeleop(Node):
         self.drive_pub = self.create_publisher(String, '/bulldozer/drive_cmd', 10)
         self.arm_pub = self.create_publisher(String, '/bulldozer/arm_cmd', 10)
 
-        # Track active keys
         self.pressed_keys = set()
         self.last_drive_cmd = "STOP"
 
-        self.base_gear_cmd = "GEAR_1"
-        self.base_gear_label = "1 (55%)"
-        self.is_boosted = False
+        # Start default at 255 (Gear 2)
+        self.current_duty = 255
+        self.current_gear_label = "2 (100%)"
 
         print(BANNER)
-        # Dedicated 20 Hz tick loop (50 ms)
+        sys.stdout.write(f"\r>>> CURRENT GEAR: {self.current_gear_label}\n")
+        sys.stdout.flush()
+
         self.timer = self.create_timer(0.05, self.control_loop)
 
     def publish_drive(self, cmd_str: str):
         msg = String()
-        msg.data = cmd_str
+        if cmd_str == "STOP":
+            msg.data = "STOP"
+        else:
+            msg.data = f"{cmd_str}:{self.current_duty}"
+        
+        # Log to terminal so you can physically see the duty cycle being emitted
+        sys.stdout.write(f"\r[PUB DRIVE] -> {msg.data:20s}\n")
+        sys.stdout.flush()
+        
         self.drive_pub.publish(msg)
 
     def publish_arm(self, cmd_str: str):
@@ -55,42 +65,42 @@ class BulldozerTeleop(Node):
         self.arm_pub.publish(msg)
 
     def on_press(self, key):
-        if key in [keyboard.Key.shift, keyboard.Key.shift_r]:
-            if not self.is_boosted:
-                self.is_boosted = True
-                self.publish_drive("GEAR_3")
-                sys.stdout.write(f"\r>>> ⚡ BOOST ON\n")
-                sys.stdout.flush()
-            return
-
+        # Support both regular '1'/'2' and numpad keys
+        key_str = None
         try:
             if hasattr(key, 'char') and key.char:
-                ch = key.char.lower()
-                if ch in ['1', '2', '3']:
-                    gears = {'1': ('GEAR_1', '1 (55%)'), '2': ('GEAR_2', '2 (75%)'), '3': ('GEAR_3', '3 (100%)')}
-                    self.base_gear_cmd, self.base_gear_label = gears[ch]
-                    if not self.is_boosted:
-                        self.publish_drive(self.base_gear_cmd)
-                        sys.stdout.write(f"\r>>> GEAR: {self.base_gear_label}\n")
-                        sys.stdout.flush()
-                else:
-                    self.pressed_keys.add(ch)
-        except AttributeError:
+                key_str = key.char.lower()
+        except Exception:
             pass
 
-    def on_release(self, key):
-        if key in [keyboard.Key.shift, keyboard.Key.shift_r]:
-            if self.is_boosted:
-                self.is_boosted = False
-                self.publish_drive(self.base_gear_cmd)
-                sys.stdout.write(f"\r>>> BOOST OFF\n")
-                sys.stdout.flush()
+        if key_str is None:
+            # Check for KeyCode or Key representation
+            key_repr = str(key).strip("'")
+            if '1' in key_repr:
+                key_str = '1'
+            elif '2' in key_repr:
+                key_str = '2'
+
+        if key_str == '1':
+            self.current_duty = 166
+            self.current_gear_label = "1 (65%)"
+            sys.stdout.write(f"\r>>> GEAR SELECTED: {self.current_gear_label} (DUTY={self.current_duty})\n")
+            sys.stdout.flush()
+            return
+        elif key_str == '2':
+            self.current_duty = 255
+            self.current_gear_label = "2 (100%)"
+            sys.stdout.write(f"\r>>> GEAR SELECTED: {self.current_gear_label} (DUTY={self.current_duty})\n")
+            sys.stdout.flush()
             return
 
+        if key_str:
+            self.pressed_keys.add(key_str)
+
+    def on_release(self, key):
         try:
             if hasattr(key, 'char') and key.char:
-                ch = key.char.lower()
-                self.pressed_keys.discard(ch)
+                self.pressed_keys.discard(key.char.lower())
         except AttributeError:
             pass
 
@@ -113,7 +123,6 @@ class BulldozerTeleop(Node):
         return "STOP"
 
     def control_loop(self):
-        # 1. Handle Drive
         current_drive = self.resolve_drive_cmd()
         if current_drive != "STOP":
             self.publish_drive(current_drive)
@@ -121,13 +130,14 @@ class BulldozerTeleop(Node):
             self.publish_drive("STOP")
         self.last_drive_cmd = current_drive
 
-        # 2. Handle Manipulator (Processed concurrently every 50ms while key is held)
-        if 'u' in self.pressed_keys: self.publish_arm("CUP_DOWN")
-        if 'j' in self.pressed_keys: self.publish_arm("CUP_UP")
         if 'i' in self.pressed_keys: self.publish_arm("ARM_UP")
         if 'k' in self.pressed_keys: self.publish_arm("ARM_DOWN")
-        if 'o' in self.pressed_keys: self.publish_arm("CLAW_OPEN")
-        if 'l' in self.pressed_keys: self.publish_arm("CLAW_CLOSE")
+        if 'u' in self.pressed_keys: self.publish_arm("CUP_UP")
+        if 'j' in self.pressed_keys: self.publish_arm("CUP_DOWN")
+        if 'o' in self.pressed_keys: self.publish_arm("CLAW_CLOSE")
+        if 'l' in self.pressed_keys: self.publish_arm("CLAW_OPEN")
+        if 'h' in self.pressed_keys: self.publish_arm("CAM_UP")
+        if 'y' in self.pressed_keys: self.publish_arm("CAM_DOWN")
 
 def main(args=None):
     rclpy.init(args=args)
