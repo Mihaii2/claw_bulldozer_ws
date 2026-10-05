@@ -14,30 +14,36 @@ pkill -9 -f robot_state_publisher 2>/dev/null || true
 pkill -9 -f ros_gz_bridge 2>/dev/null || true
 pkill -9 -f teleop_keyboard 2>/dev/null || true
 pkill -9 -f trajectory_tracker 2>/dev/null || true
+pkill -9 -f web_server.py 2>/dev/null || true
+pkill -9 -f uvicorn 2>/dev/null || true
 
-# 2. Wi-Fi Hotspot Step Removed
-# Both Laptop and ESP32 connect directly to the router ("Project")
-
-# 3. Restart micro-ROS Docker Agent
+# 2. Restart micro-ROS Docker Agent
 echo "==> Restarting micro-ROS Docker Agent..."
 docker stop microros_agent 2>/dev/null || true
 docker rm -f microros_agent 2>/dev/null || true
 docker run -d --rm --net=host --name microros_agent microros/micro-ros-agent:jazzy udp4 --port 8888
 
-# 4. Source ROS 2
+# 3. Source ROS 2
 echo "==> Sourcing ROS 2 Jazzy..."
 source /opt/ros/jazzy/setup.bash
 
-# 5. Build Workspace
+# 4. Build Workspace
 echo "==> Building Workspace..."
 colcon build --symlink-install --packages-select bulldozer micro_ros_msgs
 
-# 6. Source Workspace Overlay
+# 5. Source Workspace Overlay
 echo "==> Sourcing Workspace Overlay..."
 source install/setup.bash
 
-# 7. Set Gazebo Mesh Resource Path
+# 6. Set Gazebo Mesh Resource Path & GPU Rendering Flags
 export GZ_SIM_RESOURCE_PATH="$WORKSPACE_DIR/install/bulldozer/share:$WORKSPACE_DIR/src/bulldozer:$GZ_SIM_RESOURCE_PATH"
+export GZ_RENDER_ENGINE=ogre2
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+
+# 7. Start Web Cockpit Server & Open Browser Tab
+echo "==> Starting Web UI Cockpit on http://localhost:5000..."
+python3 "$WORKSPACE_DIR/src/bulldozer/web/web_server.py" &
+(sleep 1.5 && xdg-open "http://localhost:5000" 2>/dev/null || true) &
 
 # 8. Launch Teleop Terminal
 echo "==> Launching Bulldozer Multi-Key Teleop Window..."

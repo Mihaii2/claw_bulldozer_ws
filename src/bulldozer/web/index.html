@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulldozer Cockpit</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="cockpit-wrapper">
+        <header>
+            <h1>🚜 Bulldozer Teleop Cockpit</h1>
+            <div id="connection-status">
+                <span class="badge-online">AGENT ACTIVE</span>
+            </div>
+        </header>
+
+        <main class="cockpit-main">
+            <!-- Dual Camera Grid -->
+            <section class="video-grid">
+                <!-- Primary Phone Feed -->
+                <div class="video-card">
+                    <div class="video-header">
+                        <span>📱 Primary Cam (Redmi Note 13)</span>
+                        <span class="badge-live">LIVE</span>
+                    </div>
+                    <div class="video-wrapper">
+                        <img src="/video_feed" alt="Phone FPV Feed" class="feed-img">
+                    </div>
+                </div>
+
+                <!-- Secondary Claw Feed -->
+                <div class="video-card">
+                    <div class="video-header">
+                        <span>🦾 Claw Cam (ESP32-S3)</span>
+                        <span class="badge-live">LIVE</span>
+                    </div>
+                    <div class="video-wrapper">
+                        <img src="/cam2_feed" alt="ESP32-S3 Claw Feed" class="feed-img">
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sidebar Panel -->
+            <aside class="sidebar">
+                <div class="card status-card">
+                    <h3>Telemetry</h3>
+                    <div class="telemetry-row">
+                        <span>Status</span>
+                        <span id="status-text" class="badge-online">ONLINE</span>
+                    </div>
+                    <div class="telemetry-row">
+                        <span>Last Cmd</span>
+                        <b id="last-cmd" style="color: #f59e0b;">STOP</b>
+                    </div>
+                </div>
+
+                <div class="card guide-card">
+                    <h3>Controls</h3>
+                    <ul class="control-list">
+                        <li><span>Drive / Rev</span> <span><kbd>W</kbd> <kbd>S</kbd></span></li>
+                        <li><span>Steer L / R</span> <span><kbd>A</kbd> <kbd>D</kbd></span></li>
+                        <li><span>Gear 65% / 100%</span> <span><kbd>1</kbd> <kbd>2</kbd></span></li>
+                        <hr>
+                        <li><span>Arm Up / Down</span> <span><kbd>I</kbd> <kbd>K</kbd></span></li>
+                        <li><span>Wrist Up / Down</span> <span><kbd>U</kbd> <kbd>J</kbd></span></li>
+                        <li><span>Claw Close / Open</span> <span><kbd>O</kbd> <kbd>L</kbd></span></li>
+                        <li><span>Phone Tilt</span> <span><kbd>H</kbd> <kbd>Y</kbd></span></li>
+                    </ul>
+                </div>
+            </aside>
+        </main>
+    </div>
+</body>
+</html>

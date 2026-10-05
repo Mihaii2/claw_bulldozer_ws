@@ -34,7 +34,7 @@
 // ==========================================
 #define TARGET_SSID         "Project"
 #define TARGET_PASS         "formula1"
-#define AGENT_IP            "192.168.1.127"
+#define AGENT_IP            "10.42.0.1"
 #define AGENT_PORT          "8888"
 
 // ==========================================
@@ -101,20 +101,21 @@ typedef struct {
 } servo_channel_state_t;
 
 // Speed adjusted: Arms @ 75% (7.5f), Cup & Claw matching @ 10.0f
-static servo_channel_state_t servo_cam   = { .target = 180.0f, .current = 180.0f, .max_step = 32.0f };
+// Cam servo initialized explicitly to 0.0f
+static servo_channel_state_t servo_cam   = { .target = 0.0f,   .current = 0.0f,   .max_step = 32.0f };
 static servo_channel_state_t servo_arm_l = { .target = 99.6f,  .current = 99.6f,  .max_step = 7.5f };
 static servo_channel_state_t servo_arm_r = { .target = 69.2f,  .current = 69.2f,  .max_step = 7.5f };
 static servo_channel_state_t servo_cup   = { .target = 90.0f,  .current = 90.0f,  .max_step = 10.0f };
 static servo_channel_state_t servo_claw  = { .target = 90.0f,  .current = 90.0f,  .max_step = 10.0f };
 
 // User Memorized Intentions
-static float intent_cam          = 180.0f;
+static float intent_cam          = 0.0f;
 static float intent_cup          = 90.0f;
 static float intent_claw         = 90.0f;
 static float current_arm_percent = 40.0f;
 
-// Delay gate for restoration
-static int64_t cam_clearance_ready_time = 0;
+// Delay gate initialized to 1 so 0 deg is immediately active on boot
+static int64_t cam_clearance_ready_time = 1;
 
 static portMUX_TYPE angle_mux = portMUX_INITIALIZER_UNLOCKED;
 
@@ -150,16 +151,12 @@ static void set_motor_speeds(int left_pwm, int right_pwm) {
 
     // RIGHT TRACK: IN3 (CH7 PWM), IN4 (GPIO 19 Digital Level)
     if (right_pwm == 0) {
-        // Complete Stop / Coast
         ledc_set_duty(LEDC_LOW_SPEED_MODE, CH_MOT_R_IN3, 0);
         gpio_set_level(MOTOR_R_IN4, 0);
     } else if (right_pwm > 0) {
-        // Forward: IN4 is LOW (0), IN3 modulates positive PWM
         ledc_set_duty(LEDC_LOW_SPEED_MODE, CH_MOT_R_IN3, right_pwm);
         gpio_set_level(MOTOR_R_IN4, 0);
     } else {
-        // Reverse: IN4 is HIGH (1), IN3 modulates inverted PWM (255 - duty)
-        // so the differential across the bridge equals exactly |-right_pwm|
         int inverted_pwm = 255 - (-right_pwm);
         ledc_set_duty(LEDC_LOW_SPEED_MODE, CH_MOT_R_IN3, inverted_pwm);
         gpio_set_level(MOTOR_R_IN4, 1);
@@ -181,7 +178,6 @@ static void drive_stop(void) {
     set_motor_speeds(0, 0);
 }
 
-// Drive Action Handler: Parses dynamic duty if provided
 static void handle_drive_action(char *action_str) {
     if (action_str == NULL || strlen(action_str) == 0) return;
 
@@ -204,7 +200,6 @@ static void handle_drive_action(char *action_str) {
 
     char *cmd = action_str;
 
-    // ESP32 Serial output showing the exact duty applied
     ESP_LOGI(TAG, "CMD: %s | DUTY: %d", cmd, duty);
 
     if (strcmp(cmd, "FORWARD") == 0) {
@@ -292,6 +287,8 @@ static void govern_joint_limits_smooth(int64_t now_us) {
             cam_clearance_ready_time = now_us + 1000000;
         } else if (now_us >= cam_clearance_ready_time) {
             servo_cam.target = intent_cam;
+        } else {
+            servo_cam.target = intent_cam;
         }
     } else {
         cam_clearance_ready_time = 0;
@@ -302,6 +299,8 @@ static void govern_joint_limits_smooth(int64_t now_us) {
             servo_cam.target = (intent_cam > low_max) ? low_max : intent_cam;
         } else if (in_upper) {
             servo_cam.target = (intent_cam < high_min) ? high_min : intent_cam;
+        } else {
+            servo_cam.target = intent_cam;
         }
     }
 }
@@ -429,8 +428,9 @@ static void init_actuators(void) {
     float start_arm_l = arm_cal.arm_l_down - 0.40f * (arm_cal.arm_l_down - arm_cal.arm_l_up);
     float start_arm_r = arm_cal.arm_r_down + 0.40f * (arm_cal.arm_r_up - arm_cal.arm_r_down);
 
+    // Initial hardware duty configured explicitly to 0.0f (opposite of 180 deg)
     ledc_channel_config_t servos[] = {
-        { .gpio_num = CAM_SERVO_PIN,   .channel = CH_SERVO_CAM,   .duty = angle_to_ticks(180.0f) },
+        { .gpio_num = CAM_SERVO_PIN,   .channel = CH_SERVO_CAM,   .duty = angle_to_ticks(0.0f) },
         { .gpio_num = ARM_L_SERVO_PIN, .channel = CH_SERVO_ARM_L, .duty = angle_to_ticks(start_arm_l) },
         { .gpio_num = ARM_R_SERVO_PIN, .channel = CH_SERVO_ARM_R, .duty = angle_to_ticks(start_arm_r) },
         { .gpio_num = CUP_SERVO_PIN,   .channel = CH_SERVO_CUP,   .duty = angle_to_ticks(90.0f) },
@@ -469,7 +469,8 @@ static void init_actuators(void) {
     gpio_config(&io_conf);
     gpio_set_level(MOTOR_R_IN4, 0);
 
-    apply_raw_servo(CH_SERVO_CAM, 180.0f);
+    // Initial raw PWM output explicitly applied at 0.0f
+    apply_raw_servo(CH_SERVO_CAM, 0.0f);
     apply_raw_servo(CH_SERVO_ARM_L, start_arm_l);
     apply_raw_servo(CH_SERVO_ARM_R, start_arm_r);
     apply_raw_servo(CH_SERVO_CUP, 90.0f);
