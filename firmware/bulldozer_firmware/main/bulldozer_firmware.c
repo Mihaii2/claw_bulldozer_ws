@@ -228,23 +228,41 @@ static inline float lerp(float a, float b, float t) {
     return a + t * (b - a);
 }
 
-static float calc_smooth_claw_max(float arm_pct) {
-    if (arm_pct <= 45.0f) return 180.0f;
-    if (arm_pct <= 55.0f) return lerp(180.0f, 156.0f, (arm_pct - 45.0f) / (55.0f - 45.0f));
-    if (arm_pct <= 60.0f) return lerp(156.0f, 151.0f, (arm_pct - 55.0f) / (60.0f - 55.0f));
-    if (arm_pct <= 70.0f) return lerp(151.0f, 135.0f, (arm_pct - 60.0f) / (70.0f - 60.0f));
-    if (arm_pct <= 80.0f) return lerp(135.0f, 120.0f, (arm_pct - 70.0f) / (80.0f - 70.0f));
-    if (arm_pct <= 90.0f) return lerp(120.0f, 100.0f, (arm_pct - 80.0f) / (90.0f - 80.0f));
-    if (arm_pct <= 100.0f) return lerp(100.0f, 90.0f, (arm_pct - 90.0f) / (100.0f - 90.0f));
-    return 90.0f;
+static inline bool is_cam_in_lenient_zone(float cam_deg) {
+    return ((cam_deg >= 0.0f && cam_deg <= 35.0f) || (cam_deg >= 160.0f && cam_deg <= 180.0f));
 }
 
-static float calc_smooth_cup_min(float arm_pct) {
-    if (arm_pct <= 70.0f) return 0.0f;
-    if (arm_pct <= 80.0f) return lerp(15.0f, 30.0f, (arm_pct - 70.0f) / 10.0f);
-    if (arm_pct <= 90.0f) return lerp(30.0f, 55.0f, (arm_pct - 80.0f) / 10.0f);
-    if (arm_pct <= 100.0f) return lerp(55.0f, 60.0f, (arm_pct - 90.0f) / 10.0f);
-    return 60.0f;
+static float calc_smooth_claw_max(float arm_pct, float cam_deg) {
+    float max_c;
+    if (arm_pct <= 45.0f) max_c = 180.0f;
+    else if (arm_pct <= 55.0f) max_c = lerp(180.0f, 156.0f, (arm_pct - 45.0f) / (55.0f - 45.0f));
+    else if (arm_pct <= 60.0f) max_c = lerp(156.0f, 151.0f, (arm_pct - 55.0f) / (60.0f - 55.0f));
+    else if (arm_pct <= 70.0f) max_c = lerp(151.0f, 135.0f, (arm_pct - 60.0f) / (70.0f - 60.0f));
+    else if (arm_pct <= 80.0f) max_c = lerp(135.0f, 120.0f, (arm_pct - 70.0f) / (80.0f - 70.0f));
+    else if (arm_pct <= 90.0f) max_c = lerp(120.0f, 100.0f, (arm_pct - 80.0f) / (90.0f - 80.0f));
+    else if (arm_pct <= 100.0f) max_c = lerp(100.0f, 90.0f, (arm_pct - 90.0f) / (100.0f - 90.0f));
+    else max_c = 90.0f;
+
+    // 25% less restrictive: allow 25% of the restricted headroom back
+    if (is_cam_in_lenient_zone(cam_deg)) {
+        max_c += (180.0f - max_c) * 0.25f;
+    }
+    return max_c;
+}
+
+static float calc_smooth_cup_min(float arm_pct, float cam_deg) {
+    float min_c;
+    if (arm_pct <= 70.0f) min_c = 0.0f;
+    else if (arm_pct <= 80.0f) min_c = lerp(15.0f, 30.0f, (arm_pct - 70.0f) / 10.0f);
+    else if (arm_pct <= 90.0f) min_c = lerp(30.0f, 55.0f, (arm_pct - 80.0f) / 10.0f);
+    else if (arm_pct <= 100.0f) min_c = lerp(55.0f, 60.0f, (arm_pct - 90.0f) / 10.0f);
+    else min_c = 60.0f;
+
+    // 25% less restrictive: lower the minimum elevation floor by 25%
+    if (is_cam_in_lenient_zone(cam_deg)) {
+        min_c *= 0.75f;
+    }
+    return min_c;
 }
 
 static void calc_smooth_phone_intervals(float arm_pct, float *low_max, float *high_min) {
@@ -269,13 +287,14 @@ static void calc_smooth_phone_intervals(float arm_pct, float *low_max, float *hi
 
 static void govern_joint_limits_smooth(int64_t now_us) {
     float arm = current_arm_percent;
+    float cam = servo_cam.current;
 
     // 1. Cup/Wrist Continuous Enforcement
-    float min_cup = calc_smooth_cup_min(arm);
+    float min_cup = calc_smooth_cup_min(arm, cam);
     servo_cup.target = (intent_cup < min_cup) ? min_cup : intent_cup;
 
     // 2. Claw Continuous Enforcement
-    float max_claw = calc_smooth_claw_max(arm);
+    float max_claw = calc_smooth_claw_max(arm, cam);
     servo_claw.target = (intent_claw > max_claw) ? max_claw : intent_claw;
 
     // 3. Phone / Cam Tilt Domain Protection & Delayed Auto-Restoration

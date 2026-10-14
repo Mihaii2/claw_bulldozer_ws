@@ -1,12 +1,22 @@
 # Autonomous Claw Bulldozer ROS 2 Workspace
 
-An autonomous manipulation and earth-moving platform featuring a multi-axis articulating high-torque claw and bucket mechanism, 4WD skid-steer chassis, ESP32 dual-core real-time control, onboard IMU pose tracking, dual camera vision systems, and ROS 2 Jazzy integration.
+An autonomous manipulation and earth-moving platform featuring a multi-axis articulating high-torque claw and bucket mechanism, 4WD skid-steer chassis, ESP32 dual-core real-time control, onboard IMU pose tracking, dual camera vision systems, and native ROS 2 Jazzy / micro-ROS integration.
 
-> 📦 **Hardware Heritage & Lineage Notice:** Core electronics (ESP32 DevKitC, TC1508 H-bridge, GY-BMI160 6-DOF IMU, buck converters) and the baseline micro-ROS architecture were harvested and evolved from the decommissioned [Mihaii2/esp32_flipper_car](https://github.com/Mihaii2/esp32_flipper_car).
+> 📦 **Hardware Heritage & Lineage Notice:** Core electronics (ESP32 DevKitC, TC1508 H-bridge, GY-BMI160 6-DOF IMU, buck converters) and the baseline micro-ROS architecture were harvested and evolved from the decommissioned [Mihaii2/esp32_flipper_car](https://github.com/Mihaii2/esp32_flipper_car) (previously *esp32_bulldozer*).
 
 <div align="center">
-  <img src="video/claw_demo.gif" width="75%" alt="Autonomous Claw Bulldozer Actuation & Teleoperation Demo" /><br/>
-  <em>Autonomous Claw Bulldozer in action: Synchronized multi-axis lift, bucket articulation, and payload capture.</em>
+  <table>
+    <tr>
+      <td align="center" width="50%">
+        <img src="video/claw_demo.gif" width="100%" alt="Actuation & Teleoperation Demo" /><br/>
+        <em>Rev 4: Original actuation demo: Synchronized lift, bucket articulation, and payload capture.</em>
+      </td>
+      <td align="center" width="50%">
+        <img src="video/object_pickup_demo.gif" width="100%" alt="Real-World Payload Capture: Object Acquisition Demo" /><br/>
+        <em>Rev 6: Field validation: Picking up objects.</em>
+      </td>
+    </tr>
+  </table>
 </div>
 
 <br/>
@@ -15,56 +25,85 @@ An autonomous manipulation and earth-moving platform featuring a multi-axis arti
   <table>
     <tr>
       <td align="center" width="33%">
-        <img src="photos/v1_prototype.jpg" width="100%" alt="Revision 1: Skinny Skeleton Prototype" /><br/>
+        <img src="photos/v1_prototype.jpg" width="100%" alt="Revision 1: Organic Lattice Prototype" /><br/>
         <b>Revision 1: Organic Lattice</b><br/>
-        <em>3D round skeleton claw; discarded due to massive support waste and print cost.</em>
+        <em>Continuous 3D round skeleton claw; discarded due to massive support waste and print cost.</em>
       </td>
       <td align="center" width="33%">
         <img src="photos/v2_axis_error.jpg" width="100%" alt="Revision 2: Off-Axis Pivot" /><br/>
         <b>Revision 2: Split Axis Failure</b><br/>
-        <em>Cheaper multi-part claw, but non-concentric pivot axes and horn bolt misalignments failed grip lock.</em>
+        <em>Flat modular claw, but non-concentric pivot axes and horn bolt misalignments failed grip lock.</em>
       </td>
       <td align="center" width="33%">
-        <img src="photos/v3_thin_beams.jpg" width="100%" alt="Revision 3: Concentric Thin Beams" /><br/>
+        <img src="photos/v3_thin_beams.jpg" width="100%" alt="Revision 3: Compliant Beams" /><br/>
         <b>Revision 3: Compliant Beams</b><br/>
         <em>Concentric claw/cup axis resolved kinematics, but thin support arms caused excessive structural flex.</em>
       </td>
     </tr>
     <tr>
       <td align="center" width="33%">
-        <img src="photos/v4_final_claw.jpg" width="100%" alt="Revision 4: Rigid Reinforced Claw" /><br/>
+        <img src="photos/v4_final_claw.jpg" width="100%" alt="Revision 4: Rigid Production Claw" /><br/>
         <b>Revision 4: Rigid Production</b><br/>
-        <em>Reinforced structural beam geometry; eliminates claw deflection and locks payload into collection cup.</em>
+        <em>Reinforced beam geometry; eliminated deflection and locked payload into the retention cup.</em>
       </td>
       <td align="center" width="33%">
-        <img src="photos/v5_dual_vision.jpg" width="100%" alt="Revision 5: Dual Vision & Phone Tilter Rig" /><br/>
-        <b>Revision 5: Dual Vision & Enclosure Rig</b><br/>
-        <em>Beam-enclosed ESP32-CAM, 5th-servo phone tilter mast, and custom electronics protective cover.</em>
+        <img src="photos/v5_dual_vision.jpg" width="100%" alt="Revision 5: Dual Vision & Enclosure Rig" /><br/>
+        <b>Revision 5: Dual Vision Rig</b><br/>
+        <em>Beam-enclosed ESP32-CAM, 5th-servo phone tilter mast, and electronics protective cover.</em>
       </td>
       <td align="center" width="33%">
-        </td>
+        <img src="photos/v6_clearance_cutouts.jpg" width="100%" alt="Revision 6: High-Visibility Cup & Extended-Clearance Claw" /><br/>
+        <b>Revision 6: Vision & Overhead Clearance</b><br/>
+        <em>Removed obstructing top beams, notched cup for direct camera line-of-sight, and retro-swing claw profile.</em>
+      </td>
     </tr>
   </table>
 </div>
 
-> **🛠 Engineering Revision History & CAD Iteration Log:**
-> * **v1.0 (Organic Monolithic Claw):** Claw designed as a continuous 3D organic round skeleton. While lightweight on paper, slicer analysis proved it unviable for FDM printing: massive support structures consumed more filament than the part itself, driving print failure rates and material cost excessively high.
-> * **v2.0 (Modular Shell & The Pivot Misalignment Post-Mortem):** Redesigned the claw into flat-laying, easily printable structural components, as well as redesigning the chassis goussets to get rid of a lot of waste support plastic. However, rapid CAD prototyping introduced two major mechanical flaws:
->   * **Axial Offset:** The bucket/cup swing axis and the claw rotation axis were placed on disparate coordinate planes rather than a single concentric shaft. The mechanical offset degraded clamping reach, making object acquisition unreliable.
->   * **Horn Geometry Error:** Servo horn mounting hole pitch and bolt clearances were mismeasured, preventing secure mechanical torque transfer without binding.
-> * **v3.0 (Concentric Axis & Structural Compliance Investigation):** Redesigned the mounting hub to align the cup and claw along a shared, concentric pivot axis. The mechanical geometry functioned correctly, but the claw extension beams were undersized in thickness. Clamping torque from the MG995 servos flexed the beams outward rather than transferring grip pressure into the target object.
-> * **v4.0 (Rigid Structural Reinforcement):** Completely re-engineered the claw support beams with increased cross-sectional area and internal ribbing. Flex is eliminated, permitting high-torque payload capture and retraction directly into the retention cup.
-> * **v4.1 (Locomotion Tuning & Track/Wheel Calibration):**
->   * **Wheel Dimensional Scaling:** Replaced oversized 45mm-radius wheel collisions with realistic 20mm-radius (40mm diameter) hubs recessed directly into the chassis axle slots for accurate Gazebo physics and ground clearance.
->   * **Pivot & Scrubbing Firmware Mitigation:** Tuned the differential drive turning profile across all speed gears to supply 100% PWM (255) to the outside wheels and 0% PWM to the inside wheels during turns, breaking lateral static friction without stalling the motors.
->   * **Drivetrain Upgrade Roadmap:** Acquired **all-metal TT 1:90 6V reduction gearboxes** to replace the stock yellow plastic units, delivering substantial low-end torque for heavy earth-moving without risk of gear-tooth shearing.
-> * **v5.0 (Perception, High-Current Power & Electronics Shielding — Current Hardware):**
->   * **Initial ESP32-CAM Prototype:** Early tests yielded severe frame-drop bottlenecks, latency, and poor visual fidelity under default configurations.
->   * **Smartphone Mount Pivot:** Designed a dedicated smartphone holder actuated by a 5th MG995 servo on `GPIO 4` to handle primary teleoperation and high-resolution spatial streaming via a mobile device.
->   * **Dual-Camera Convergence & Custom Enclosure:** Subsequent firmware optimizations, clock adjustments, and memory pipeline tuning substantially stabilized ESP32-CAM stream throughput. Attempting to mount the bare board to the pre-existing overhead beam directly above the claw proved mechanically unviable and structurally awkward. Consequently, engineered a custom dedicated 3D-printed plastic enclosure tailored specifically to house the ESP32-CAM and lock rigidly onto the upper beam assembly. The platform now implements a **dual-vision stack**: an actuated smartphone tilter for primary broad-field telemetry and a ruggedized, enclosed ESP32-CAM for direct manipulation monitoring, alongside an upcoming **8×8 Time-of-Flight (ToF)** distance matrix.
->   * **2S2P High-Current Battery Array (Brownout Mitigation):** In the 2-cell configuration, intense multi-joint dynamic actuation (simultaneous 5-servo manipulation alongside aggressive 4WD skid-steer scrubbing) drew more peak current than the pack could sustain. The severe voltage sag triggered brownout resets on the ESP32 logic rail. To resolve this, added two additional 18650 cells wired in parallel (**2S2P topology**). The battery pack maintains nominal **7.4V** while unlocking a massive **20A instantaneous discharge headroom**, ensuring complete electrical stability under full-load operation.
->   * **RF Range Expansion:** Added dedicated 3dBi external dipole antennas to both the main motherboard ESP32 and the secondary ESP32-CAM to prevent telemetry drops and feed degradation across Wi-Fi.
->   * **Electronics Enclosure / Cover:** Designed and printed a custom top-shell protective cover shielding the modular quad-perfboard assembly, buck converters, and wiring harness from earth, debris, and direct mechanical impacts during aggressive digging operations.
+---
+
+## 🛠 Engineering Revision History & Post-Mortem Log
+
+- **v1.0 (Organic Monolithic Claw):** Claw designed as a continuous 3D organic round skeleton. While lightweight on paper, slicer analysis proved it unviable for FDM printing: massive support structures consumed more filament than the part itself, driving print failure rates and material cost excessively high.
+- **v2.0 (Modular Shell & The Pivot Misalignment Post-Mortem):** Redesigned the claw into flat-laying, easily printable structural components, as well as redesigning the chassis gussets to eliminate support waste. However, rapid CAD prototyping introduced two major mechanical flaws:
+  - **Axial Offset:** The bucket/cup swing axis and the claw rotation axis were placed on disparate coordinate planes rather than a single concentric shaft. The mechanical offset degraded clamping reach, making object acquisition unreliable.
+  - **Horn Geometry Error:** Servo horn mounting hole pitch and bolt clearances were mismeasured, preventing secure mechanical torque transfer without binding.
+- **v3.0 (Concentric Axis & Structural Compliance Investigation):** Redesigned the mounting hub to align the cup and claw along a shared, concentric pivot axis. The mechanical geometry functioned correctly, but the claw extension beams were undersized in thickness. Clamping torque from the MG995 servos flexed the beams outward rather than transferring grip pressure into the target object.
+- **v4.0 (Rigid Structural Reinforcement):** Completely re-engineered the claw support beams with increased cross-sectional area and internal ribbing. Flex was eliminated, permitting high-torque payload capture and retraction directly into the retention cup.
+- **v4.1 (Locomotion Tuning & Track/Wheel Calibration):**
+  - **Wheel Dimensional Scaling:** Replaced oversized 45mm-radius wheel collisions with realistic 20mm-radius (40mm diameter) hubs recessed directly into the chassis axle slots for accurate Gazebo physics and ground clearance.
+  - **Pivot & Scrubbing Firmware Mitigation:** Tuned the differential drive turning profile across all speed gears to supply 100% PWM (255) to the outside wheels and 0% PWM to the inside wheels during turns, breaking lateral static friction without stalling the motors.
+  - **Drivetrain Upgrade Roadmap:** Acquired **all-metal TT 1:90 6V reduction gearboxes** to replace the stock plastic units, delivering substantial low-end torque for heavy earth-moving without risk of gear-tooth shearing.
+- **v5.0 (Perception Mast, 2S2P Power & Electronics Shielding):**
+  - **Dual-Camera Convergence:** Enclosed secondary ESP32-CAM in a custom mount directly above the manipulation bay; added 5th MG995 servo on `GPIO 4` driving a tilt cradle for an operator smartphone.
+  - **2S2P High-Current Battery Array (Brownout Mitigation):** In 2S1P, simultaneous 5-servo dynamic actuation and 4WD skid-steer scrubbing produced massive inductive rail sags, triggering ESP32 brownout detector resets (`rst:0x7 (TG0WDT_SYS_RESET)` / `Brownout detector was triggered`). Expanded to **2S2P (4× 18650)**, providing **20A instantaneous discharge headroom** at nominal 7.4V.
+- **v5.1 (Hardware Failure Post-Mortem: Uncalibrated Mechanical Stall Burnout):**
+  - **The Incident:** During a rushed bench test prior to implementing joint soft-limits in firmware, the smartphone tilt servo (`GPIO 4`) commanded an unverified absolute position. The smartphone cradle mechanically jammed against the upper structural bracing.
+  - **The Consequence:** The servo's internal potentiometer hunted furiously around the unattainable deadband, causing the phone cradle to oscillate violently before pulling continuous stall current ($\approx 1.8\text{A}$ at 6V). The internal plastic/brass reduction gear cluster stripped, and the DC core motor suffered thermal commutator destruction.
+  - **The Engineering Fix:** Implemented **dual protection**:
+    1. **Dynamic Slew & Collision Soft-Limits:** Embedded piecewise polynomial clearance checks (`calc_smooth_phone_intervals`, `calc_smooth_claw_max`, `calc_smooth_cup_min`) directly in FreeRTOS to prevent conflicting joint trajectories.
+    2. **Elastic Band Preload Damping (Backlash Elimination):** The cantilevered weight of the smartphone caused significant play around the MG995 output spline, allowing the cradle to wobble and flutter uncontrollably over small vibrations. To resolve this without machining custom friction clutches, high-tension elastic rubber bands were wrapped around the servo horn and anchored to the lower mount. The elastic bands apply constant downward tension to the horn, preloading the internal gear train, eliminating free play in the output spline, and providing mechanical resistance that dampens out oscillations.
+- **v6.0 (Vision Line-of-Sight & Retro-Clearance Claw Redesign — Current Hardware):**
+  - **Overhead Structural Beam Elimination:** The original crossbeams spanning the front chassis uprights introduced severe blind spots. The driver could not see whether an object was seated inside the collection cup. These beams were eliminated in CAD, redistributing torsional rigidity into the lower tub.
+  - **Notched Vision Cup:** The solid retention bucket was completely remodeled with a chamfered center notch and lower rear sidewall. The onboard camera and phone tilt rig now maintain direct visual line-of-sight into the bottom of the cup.
+  - **Overhead Clearance & Full Retro-Articulation Claw:** In the previous design, scooping under tall objects (such as bottles or vertical canisters) was impossible because the claw hung forward in front of the bucket opening; driving forward caused the claw to collide with the object's body before the cup lip could slide underneath. The claw geometry was re-engineered for expanded angular throw, allowing it to sweep higher up and swing entirely behind the rear profile of the cup when fully extended. This clears the approach path completely, allowing the cup to slide cleanly under tall items before the claw swings over the top to lock them in place.
+
+---
+
+## 🛠 Features
+
+- **Articulated High-Torque Clamping:** 4× MG995 servos providing dual-arm lifting, cup tilting, and active payload grabbing.
+- **Dynamic Perception Mast:** 5th MG995 servo driving an adjustable-pitch smartphone cradle alongside a dedicated, encased ESP32-CAM for dual-angle perception.
+- **2S2P Anti-Brownout Power Bus:** 4× 18650 cell array supplying 20A continuous headroom at 7.4V, resolving previous ESP32 logic resets during high-strain claw and track maneuvers.
+- **Reinforced M2-Bolted Backbone:** 4-piece perfboard array rigidly locked with M2 hardware, integrated with screw terminals and keyed JST-XH wiring harnesses for modular serviceability.
+- **High-Gain RF Connectivity:** Dual 3dBi external antennas eliminating packet drop on high-bandwidth ROS 2 telemetry and camera streams.
+- **Debris & Impact Shielding:** Custom 3D-printed electronics housing protecting motherboards, buck converters, and connections against soil fallout.
+- **Fail-Safe Electrical Design:** Perfboard-soldered 5A car blade fuse, $4\times 1\,\text{k}\Omega$ MCU gate isolation resistors, and an aluminum thermal radiator preventing driver burnout.
+- **Dual-Rail Isolated Power Distribution:** High-current XL4015 buck converter isolates heavy servo inductive back-EMF from the ESP32 logic rail.
+- **Calibrated Skid-Steer Kinematics:** Asymmetrical 100/0 PWM steering regime breaks track scrubbing, supplemented by 20mm scale-matched wheel collisions.
+- **Concentric Axis Kinematics:** Revision 4 unibody geometry maintains zero rotational shear between retention cup and claw swing arcs.
+- **Native Micro-ROS Integration:** ESP32 communicates deterministic low-latency telemetry and joint states natively to ROS 2 Jazzy over XRCE-DDS.
+- **Dual-Core FreeRTOS Execution:** Decoupled architecture isolating high-speed I2C sensor/PWM routines from network communication.
 
 ---
 
@@ -99,23 +138,23 @@ The primary motherboard is built on a modular composite deck created by joining 
 </div>
 
 ### Modular Wiring, Interconnects & Thermal Hardening
-* **2S2P High-Current Bus Integration:** 4× 18650 cells wired in a 2-series 2-parallel configuration feed nominal 7.4V with 20A continuous discharge potential into the motherboard, fully eliminating inductive voltage dips and preventing the ESP32 from brownout resetting during heavy maneuvers.
-* **Bolted Multi-Board Substrate (M2 Hardware):** Four individual 5cm × 7cm perfboards are mechanically fastened together with M2 nuts and bolts, forming a wide and rigid chassis electronics platform without fragile solder joints bridging structural seams.
-* **Modular JST-XH Connectors:**
-  * **IMU Interconnect:** Male JST-XH pin headers soldered directly to the perfboard carry the 3.3V logic/I2C lines to a mating female connector harness on the GY-BMI160 sensor.
-  * **Auxiliary ESP32-CAM Power:** A dedicated perfboard-soldered male JST-XH connector delivers clean 5.0V logic rail power directly from the MP1584EN buck converter to the camera enclosure harness.
-* **Screw Terminal Power & Motor Distribution:**
-  * **Battery Bus:** 2× 2-pin PCB screw terminal blocks securely anchor the high-current 7.4V battery input and master return paths without relying on fragile jumper pins.
-  * **DC Locomotion:** 4× 2-pin PCB screw terminal blocks connect the left and right drive motor leads directly to the TC1508 motor driver outputs.
-* **Active Driver Heat Dissipation:** Under sustained skid-steer scrubbing, the TC1508 motor driver frequently entered internal thermal shutdown. An extruded aluminum heatsink/radiator was thermal-bonded to the IC package, eliminating thermal throttling during stall torque scenarios.
-* **MCU Pin Isolation ($4\times 1\,\text{k}\Omega$ Resistors):** Dedicated $1\,\text{k}\Omega$ series current-limiting resistors were installed on every logic trace connecting the ESP32 GPIOs to the TC1508 inputs (`IN1`–`IN4`). If the H-bridge suffers catastrophic shoot-through or internal shorting to the motor supply rail, these resistors prevent high voltage from back-feeding and frying the ESP32 silicon.
-* **5A Automotive Blade Fuse:** A standard 5A car blade fuse was soldered directly to the perfboard immediately downstream of the main power switch on the positive line feeding the TC1508 motor rail, isolating full-system shorts and protecting the battery pack from catastrophic damage.
+- **2S2P High-Current Bus Integration:** 4× 18650 cells wired in a 2-series 2-parallel configuration feed nominal 7.4V with 20A continuous discharge potential into the motherboard, fully eliminating inductive voltage dips and preventing the ESP32 from brownout resetting during heavy maneuvers.
+- **Bolted Multi-Board Substrate (M2 Hardware):** Four individual 5cm × 7cm perfboards are mechanically fastened together with M2 nuts and bolts, forming a wide and rigid chassis electronics platform without fragile solder joints bridging structural seams.
+- **Modular JST-XH Connectors:**
+  - **IMU Interconnect:** Male JST-XH pin headers soldered directly to the perfboard carry the 3.3V logic/I2C lines to a mating female connector harness on the GY-BMI160 sensor.
+  - **Auxiliary ESP32-CAM Power:** A dedicated perfboard-soldered male JST-XH connector delivers clean 5.0V logic rail power directly from the MP1584EN buck converter to the camera enclosure harness.
+- **Screw Terminal Power & Motor Distribution:**
+  - **Battery Bus:** 2× 2-pin PCB screw terminal blocks securely anchor the high-current 7.4V battery input and master return paths without relying on fragile jumper pins.
+  - **DC Locomotion:** 4× 2-pin PCB screw terminal blocks connect the left and right drive motor leads directly to the TC1508 motor driver outputs.
+- **Active Driver Heat Dissipation:** Under sustained skid-steer scrubbing, the TC1508 motor driver frequently entered internal thermal shutdown. An extruded aluminum heatsink/radiator was thermal-bonded to the IC package, eliminating thermal throttling during stall torque scenarios.
+- **MCU Pin Isolation ($4\times 1\,\text{k}\Omega$ Resistors):** Dedicated $1\,\text{k}\Omega$ series current-limiting resistors were installed on every logic trace connecting the ESP32 GPIOs to the TC1508 inputs (`IN1`–`IN4`). If the H-bridge suffers catastrophic shoot-through or internal shorting to the motor supply rail, these resistors prevent high voltage from back-feeding and frying the ESP32 silicon.
+- **5A Automotive Blade Fuse:** A standard 5A car blade fuse was soldered directly to the perfboard immediately downstream of the main power switch on the positive line feeding the TC1508 motor rail, isolating full-system shorts and protecting the battery pack from catastrophic damage.
 
 ---
 
 ## 🧩 Bill of Materials (BOM)
 
-### Current Build (v5.0 Autonomous Dual-Vision Platform)
+### Current Build (v6.0 Autonomous Dual-Vision Platform)
 
 | Component / Module | Specification / Model | Qty | Description / Role |
 |---|---|---|---|
@@ -138,7 +177,7 @@ The primary motherboard is built on a modular composite deck created by joining 
 | **Main Power Switch** | Mini 3-Pin SPDT Toggle Switch | 1 | Master battery circuit cutoff switch |
 | **Electronics Shell** | 3D-Printed Top Bay Enclosure | 1 | Protective cover shielding motherboard, buck regulators, and wiring harness |
 | **Secondary Vision** | ESP32-CAM in Custom 3D Enclosure | 1 | Close-proximity claw inspection; housed in a custom enclosure overcoming beam-mounting limits |
-| **Primary Vision** | Articulated Smartphone Tilter Mount | 1 | Dynamic tilting mobile phone rig actuated via 5th MG995 servo on `GPIO 4` |
+| **Primary Vision** | Articulated Smartphone Tilter Mount | 1 | Dynamic tilting mobile phone rig actuated via 5th MG995 servo on `GPIO 4` with elastic band preloading |
 | **Depth Sensor (Roadmap)** | 8x8 Multizone ToF Matrix Sensor | 1 | Surface profiling and short-range claw docking validation |
 
 ---
@@ -158,113 +197,192 @@ The primary motherboard is built on a modular composite deck created by joining 
 
 ---
 
-## 🛠 Features
-- **Articulated High-Torque Clamping:** 4× MG995 servos providing dual-arm lifting, cup tilting, and active payload grabbing.
-- **Dynamic Perception Mast:** 5th MG995 servo driving an adjustable-pitch smartphone cradle alongside a dedicated, encased ESP32-CAM for dual-angle perception.
-- **2S2P Anti-Brownout Power Bus:** 4× 18650 cell array supplying 20A continuous headroom at 7.4V, resolving previous ESP32 logic resets during high-strain claw and track maneuvers.
-- **Reinforced M2-Bolted Backbone:** 4-piece perfboard array rigidly locked with M2 hardware, integrated with screw terminals and keyed JST-XH wiring harnesses for modular serviceability.
-- **High-Gain RF Connectivity:** Dual 3dBi external antennas eliminating packet drop on high-bandwidth ROS 2 telemetry and camera streams.
-- **Debris & Impact Shielding:** Custom 3D-printed electronics housing protecting motherboards, buck converters, and connections against soil fallout.
-- **Fail-Safe Electrical Design:** Perfboard-soldered 5A car blade fuse, $4\times 1\,\text{k}\Omega$ MCU gate isolation resistors, and an aluminum thermal radiator preventing driver burnout.
-- **Dual-Rail Isolated Power Distribution:** High-current XL4015 buck converter isolates heavy servo inductive back-EMF from the ESP32 logic rail.
-- **Calibrated Skid-Steer Kinematics:** Asymmetrical 100/0 PWM steering regime breaks track scrubbing, supplemented by 20mm scale-matched wheel collisions.
-- **Concentric Axis Kinematics:** Revision 4 unibody geometry maintains zero rotational shear between retention cup and claw swing arcs.
-- **Native Micro-ROS Integration:** ESP32 communicates deterministic low-latency telemetry and joint states natively to ROS 2 Jazzy over XRCE-DDS.
-- **Dual-Core FreeRTOS Execution:** Decoupled architecture isolating high-speed I2C sensor/PWM routines from network communication.
+## 📹 Hardware Calibration
+
+<div align="center">
+  <img src="video/servo_collision_calibration.gif" width="25%" alt="Manual Servo Collision Calibration" /><br/>
+  <em>Bench test: Manually determining physical interference angles between the camera mast, lift arms, and retention cup.</em>
+</div>
+
+The video above shows the result of the manual step-by-step physical calibration procedure used to map the robot's mechanical boundaries. Before committing firmware soft-limits, each servo channel was actuated incrementally to identify exact collision points:
+- **Example:** Raising the arms beyond $70\%$ elevation causes the cross-brace to clip the phone cradle if tilted between $115^\circ$ and $145^\circ$.
 
 ---
 
-## 🔌 Hardware Architecture & Power Routing
+## 📶 Network Routing Evolution & Infrastructure Architecture
 
-```mermaid
-graph TD
-    Batt["4x 18650 Battery Array<br/>(2S2P Topology, 7.4V Nominal, 20A Headroom)"] --> Switch["3-Pin Toggle Switch"]
-    Switch --> ScrewBatt["2x Screw Terminals<br/>(Main 7.4V Bus)"]
-    
-    subgraph PowerDistribution["Modular Deck (4x 5x7cm Perfboards Bolted with M2 Hardware)"]
-        ScrewBatt --> Cap1["470uF Bulk Filter"]
-        Cap1 --> XL4015["XL4015 Buck Converter<br/>(Steps down to 6.0V, 5A Peak)"]
-        Cap1 --> MP1584["MP1584EN Buck Converter<br/>(Steps down to 5.0V)"]
-        ScrewBatt --> Fuse["5A Car Blade Fuse<br/>(Soldered to Perfboard)"]
-        MP1584 --> Cap2["470uF Logic Filter"]
-        MP1584 --> JST_Cam["JST-XH 5V Power Connector"]
-    end
+### 1. The Wide-Area Cellular Vision (Vodafone vs. Orange Reality Check)
+The initial architectural goal was ambitious: liberate the robot from local Wi-Fi range entirely. By mounting a smartphone with mobile data onto the robot and pairing the laptop to fixed institutional Wi-Fi, the vehicle was envisioned to operate anywhere within citywide cellular coverage:
+- **The Vodafone Bottleneck:** Initial testing in this geographic sector failed immediately due to severe upstream bandwidth throttling on Vodafone. Video frames dropped continuously, and keepalive packets routinely timed out, tripping the firmware safety watchdog (`DRIVE_TIMEOUT_US = 160000`) and stalling the motors mid-maneuver.
+- **The Orange Bandwidth vs. Latency Paradox:** Switched to an Orange SIM card. Upstream and downstream bandwidth improved dramatically, but packet round-trip times (RTT) were erratic. Cellular carrier routing, tower switching, and bufferbloat introduced massive latency jitter (spiking unpredictably between $120\text{ ms}$ and $600\text{ ms}$). While adequate for passive video streaming, driving a skid-steer bulldozer and controlling an open-loop articulated claw with fluctuating half-second input lag proved completely uncontrollable.
 
-    subgraph Actuators["High-Current Actuation"]
-        XL4015 -->|"6.0V Rail"| Servos["5x MG995 Servos<br/>(Arm Sync, Cup, Claw, Phone Tilter)"]
-        Fuse -->|"Protected 7.4V Rail"| TC1508["TC1508 H-Bridge<br/>(+ Radiator / Heatsink)"]
-        TC1508 --> ScrewMotors["4x Screw Terminals"]
-        ScrewMotors --> TT_Motors["4x TT Motors<br/>(Skid-Steer Locomotion)"]
-    end
+### 2. The Netis Dual-Band Router & The Eduroam Channel 48 Wall
+To eliminate carrier jitter, the strategy shifted to establishing a private, high-speed local wireless network using an affordable **Netis dual-band router** (providing simultaneous 2.4 GHz for the ESP32 and 5 GHz for high-throughput video streaming from the phone):
+- **The Channel 48 Scanning Failure:** The primary campus network (*eduroam*) operated on **5 GHz Channel 48**. The budget Netis router's wireless repeater/bridge firmware was incapable of properly locking onto or decoding the upstream eduroam 5 GHz Channel 48 broadcast. Because the router could not repeat the network wirelessly, the entire setup was stranded without internet access or direct upstream bridge connectivity.
 
-    subgraph LogicAndSensors["Logic & Processing Plane (Cover Enclosure)"]
-        Cap2 -->|"5.0V VIN"| ESP32["ESP32 DevKitC V4<br/>(+ 3dBi Antenna)"]
-        ESP32 -->|"JST-XH Harness (3.3V/I2C)"| BMI160["Bosch GY-BMI160 (6-DOF IMU)"]
-        ESP32 -->|"PWM Control (LEDC)"| Servos
-        ESP32 -->|"4x 1k Series Resistors"| TC1508
-        ESP32 -.->|"Future Expansion"| ToF["8x8 ToF Matrix Sensor"]
-        JST_Cam --> ESP32Cam["ESP32-CAM in Custom Enclosure<br/>(+ 3dBi Antenna)"]
-        ESP32Cam -.->|"WLAN Stream"| ROS2["ROS 2 Ecosystem"]
-        Phone["Smartphone (Tilter Mount)"] -.->|"WebRTC / RTSP"| ROS2
-    end
-```
+### 3. The Wired Ethernet Bridging Solution
+The networking roadblock was solved by re-architecting the laptop as the primary gateway:
+1. **Upstream Link:** The laptop's internal wireless card maintains the upstream connection to the campus network (eduroam on Channel 48).
+2. **Physical Ethernet Bridge:** A dedicated Ethernet cable connects the laptop’s RJ45 port directly to the Netis router's uplink port, bridging internet and local network traffic.
+3. **Isolated Dual-Band Subnet (`10.42.0.0/24`):**
+   - The Netis router broadcasts an isolated, high-speed local subnet (`SSID: Project`).
+   - The **ESP32 DevKitC** connects cleanly to the **2.4 GHz b/g/n** band (locked to Channel 6, 20 MHz bandwidth, zero power saving).
+   - The **operator smartphone** connects to the **5 GHz** band for video telemetry.
+   - All teleoperation commands, micro-ROS UDP packets, and WebSockets route directly across the local switch without entering campus or cellular infrastructure, maintaining deterministic sub-25ms response times.
 
 ---
 
-## ⚡ Hardware Pinout (ESP32)
+## ⚡ Communication Protocol Benchmark: HTTP vs. WebSockets
+
+Teleoperation requires sustained bidirectional round-trip times (RTT) under $50\text{ ms}$ to maintain fine balance and grab payloads without crushing or overshooting.
+
+<div align="center">
+  <table>
+    <tr>
+      <td align="center" width="50%">
+        <img src="photos/http_latency_fail.jpg" width="95%" alt="HTTP REST Polling Latency Benchmark" /><br/>
+        <b>Legacy HTTP / REST Polling Architecture</b><br/>
+        <em>High connection teardown overhead: 113ms average latency, peaking to 513ms all-time max.</em>
+      </td>
+      <td align="center" width="50%">
+        <img src="photos/ws_latency_success.jpg" width="95%" alt="WebSocket Duplex Real-Time Benchmark" /><br/>
+        <b>High-Speed WebSocket Full-Duplex Architecture</b><br/>
+        <em>Persistent TCP socket: 22ms average latency, capped at 63ms all-time max. Sub-10ms drive frames.</em>
+      </td>
+    </tr>
+  </table>
+</div>
+
+### Empirical Performance Comparison
+
+| Metric | Legacy HTTP / REST Teleop | WebSocket Duplex Teleop (Current) | Improvement Factor |
+|---|---|---|---|
+| **Underlying Transport** | Stateless HTTP GET/POST polling | Persistent Bidirectional WebSocket (`ws://`) | Persistent connection / No TCP handshakes |
+| **Current Live Ping** | $43\text{ ms}$ | **$16\text{ ms} - 50\text{ ms}$** | $\approx 2.5\times \text{ faster}$ |
+| **All-Time Average RTT** | $113\text{ ms}$ | **$22\text{ ms} - 28\text{ ms}$** | **$4.5\times - 5.1\times \text{ lower latency}$** |
+| **Peak 10s Latency** | $155\text{ ms}$ | **$63\text{ ms}$** | **$2.5\times \text{ lower jitter}$** |
+| **All-Time Max Spike** | **$513\text{ ms}$ (Severe Lag)** | **$63\text{ ms}$ (Deterministic)** | **$8.1\times \text{ stability headroom}$** |
+| **Drive Packet Processing** | Request parsing, headers overhead | Raw frame tags (`C:FWD_LEFT`, `C:STOP`) | Instantaneous frame dispatch ($1\text{ ms} - 9\text{ ms}$) |
+
+---
+
+## 🎛 Web-Based Hardware Teleoperation & Calibration Dashboard
+
+To bypass ROS 2 workstation boot delays during field tests, the ESP32 serves an embedded, real-time dashboard written in vanilla JS/CSS directly over WebSockets (`ws_handler` on port 80).
+
+<div align="center">
+  <img src="photos/web_dashboard_full.jpg" width="85%" alt="Autonomous Bulldozer Web Dashboard Interface" /><br/>
+  <em>Integrated real-time teleoperation GUI featuring live feedback badges, calibration overrides, drive controls, and latency diagnostics.</em>
+</div>
+
+### Dashboard Capabilities & Safety Pipeline:
+1. **Kinematic Angle & Elevation Monitoring:** Displays calibrated servo readouts for Camera Pitch (`GPIO 4`), Synced Dual-Arm Height (`GPIO 18` / `GPIO 5`), Wrist/Cup Pitch (`GPIO 17`), and Claw Gripper (`GPIO 16`).
+2. **On-the-Fly Hardware Calibration:** Numeric step fields allow instant adjustment of mechanical arm endpoints (`cal_l_down`, `cal_l_up`, `cal_r_down`, `cal_r_up`) over the air without re-flashing ESP32 firmware.
+3. **Continuous Smooth Safety Governor:**
+   - Claw opening limits are smoothly coordinated relative to arm lift percentage (`calc_smooth_claw_max`) to keep mechanisms within dynamic structural boundaries.
+   - Cup tilt is dynamically elevated when the arm approaches the chassis floor (`calc_smooth_cup_min`) to prevent under-chassis binding.
+   - Phone tilt angle is restricted if the arms raise past $70\%$ elevation (`calc_smooth_phone_intervals`) to prevent the lift mechanism from colliding with the camera mast.
+4. **Sub-10ms Drive Interface:** 8-direction tactile buttons and a dedicated emergency stop (`■`) paired with continuous keyboard polling (`W A S D`) sending short frame descriptors (`C:FORWARD`, `C:SPIN_LEFT`, `C:FWD_RIGHT`).
+
+---
+
+## ⚡ ESP32 Firmware Pinout Reference
 
 Unified GPIO allocation across motor drive stages, servo PWM channels, and sensor buses:
 
-| Subsystem | Component Pin | ESP32 GPIO / Rail | Peripheral / Channel | Function / Calibration Limits |
+| Subsystem | Component Pin | ESP32 GPIO / Rail | Peripheral / Channel | Function / Operational Limits |
 |---|---|---|---|---|
-| **DC Drive (TC1508)** | `IN1` | `GPIO 23` | GPIO Output via $1\,\text{k}\Omega$ Resistor | Right Track Motor (Direction A) |
-| **DC Drive (TC1508)** | `IN2` | `GPIO 22` | GPIO Output via $1\,\text{k}\Omega$ Resistor | Right Track Motor (Direction B) |
-| **DC Drive (TC1508)** | `IN3` | `GPIO 21` | GPIO Output via $1\,\text{k}\Omega$ Resistor | Left Track Motor (Direction A) |
-| **DC Drive (TC1508)** | `IN4` | `GPIO 19` | GPIO Output via $1\,\text{k}\Omega$ Resistor | Left Track Motor (Direction B) |
-| **Servos (MG995)** | Arm Base Left | `GPIO 18` | `LEDC_CHANNEL_0` | `132.0°` (Down / 0%) to `44.0°` (Up / 100%) |
-| **Servos (MG995)** | Arm Base Right | `GPIO 5` | `LEDC_CHANNEL_1` | `40.0°` (Down / 0%) to `124.0°` (Up / 100%) *(Mirrored sync)* |
-| **Servos (MG995)** | Cup / Wrist Tilt | `GPIO 17` | `LEDC_CHANNEL_2` | Independent Pitch Mechanism |
-| **Servos (MG995)** | Claw Gripper | `GPIO 16` | `LEDC_CHANNEL_3` | Independent Grip / Release Mechanism |
-| **Servos (MG995)** | Phone Tilter | `GPIO 4` | `LEDC_CHANNEL_4` | Actuated Camera / Phone Pitch Control |
+| **DC Drive (TC1508)** | `IN1` | `GPIO 23` | `LEDC_CHANNEL_5` via $1\,\text{k}\Omega$ Resistor | Right Track Motor (Direction A) |
+| **DC Drive (TC1508)** | `IN2` | `GPIO 22` | `LEDC_CHANNEL_6` via $1\,\text{k}\Omega$ Resistor | Right Track Motor (Direction B) |
+| **DC Drive (TC1508)** | `IN3` | `GPIO 21` | `LEDC_CHANNEL_7` via $1\,\text{k}\Omega$ Resistor | Left Track Motor (Direction A) |
+| **DC Drive (TC1508)** | `IN4` | `GPIO 19` | GPIO Output via $1\,\text{k}\Omega$ Resistor | Left Track Motor (Direction B - Inverted Rail) |
+| **Servos (MG995)** | Phone Tilter | `GPIO 4` | `LEDC_CHANNEL_0` | Actuated Camera / Phone Pitch (`0.0°` to `180.0°`) |
+| **Servos (MG995)** | Arm Base Left | `GPIO 18` | `LEDC_CHANNEL_1` | `138.0°` (Down / 0%) to `42.0°` (Up / 100%) |
+| **Servos (MG995)** | Arm Base Right | `GPIO 5` | `LEDC_CHANNEL_2` | `34.0°` (Down / 0%) to `122.0°` (Up / 100%) *(Mirrored)* |
+| **Servos (MG995)** | Cup / Wrist Tilt | `GPIO 17` | `LEDC_CHANNEL_3` | High-Torque Retention Cup Pitch Control |
+| **Servos (MG995)** | Claw Gripper | `GPIO 16` | `LEDC_CHANNEL_4` | Extended Retro-Clearance Claw Sweep Control |
 | **IMU (BMI160)** | `SCL` | `GPIO 32` | `I2C_NUM_0` SCL via JST-XH | Hardware I2C Clock Line |
 | **IMU (BMI160)** | `SDA` | `GPIO 25` | `I2C_NUM_0` SDA via JST-XH | Hardware I2C Data Line |
-| **IMU (BMI160)** | `CS` / `SA0` | `3.3V Rail` | Logic High via JST-XH | Forces I2C Mode / Sets Address to `0x69` |
+| **IMU (BMI160)** | `CS` / `SA0` | `3.3V Rail` | Logic High via JST-XH | Sets I2C Address to `0x69` |
 
 > *Note: All MG995 servos utilize `LEDC_TIMER_0` configured for 50 Hz PWM with 14-bit resolution.*
 
 ---
 
-## 🚀 Getting Started
+## 🔌 Hardware Power Architecture & Wiring Topology
+
+```mermaid
+graph TD
+    Batt["4x 18650 Li-Ion Cells<br/>(2S2P: 7.4V Nominal, 20A Continuous Headroom)"] --> Switch["Mini 3-Pin SPDT Toggle Switch"]
+    Switch --> ScrewBatt["2-Pin Screw Terminals<br/>(Master 7.4V Distribution Bus)"]
+    
+    subgraph MotherboardSubstrate["Composite Deck (4x 5x7cm Perfboards Bolted with M2 Hardware)"]
+        ScrewBatt --> Cap1["470uF Bulk Electrolytic Capacitor"]
+        Cap1 --> XL4015["XL4015 High-Current Buck Converter<br/>(Steps down to 6.0V Rail, >=5A Continuous)"]
+        Cap1 --> MP1584["MP1584EN Buck Converter<br/>(Steps down to 5.0V Logic Rail)"]
+        ScrewBatt --> Fuse["5A Automotive Blade Fuse<br/>(Direct Perfboard Solder)"]
+        MP1584 --> Cap2["470uF Logic Decoupling Capacitor"]
+        MP1584 --> JST_Cam["JST-XH 5.0V Aux Connector"]
+    end
+
+    subgraph HighCurrentActuation["High-Current Actuators"]
+        XL4015 -->|"6.0V Clean Rail"| Servos["5x TowerPro MG995 Servos<br/>(Arm Sync x2, Cup, Claw, Phone Tilter)"]
+        Fuse -->|"Protected 7.4V Rail"| TC1508["TC1508 H-Bridge Driver<br/>(+ Bonded Extruded Aluminum Radiator)"]
+        TC1508 --> ScrewMotors["4x 2-Pin Screw Terminals"]
+        ScrewMotors --> TT_Motors["4x TT DC Gear Motors<br/>(Skid-Steer Locomotion)"]
+    end
+
+    subgraph LogicAndSensors["Logic, RF & Perception Plane"]
+        Cap2 -->|"5.0V to VIN"| ESP32["ESP32 DevKitC V4<br/>(+ 3dBi Dipole Antenna)"]
+        ESP32 -->|"JST-XH I2C Bus"| BMI160["Bosch GY-BMI160 (6-DOF IMU)"]
+        ESP32 -->|"5x LEDC PWM Lines"| Servos
+        ESP32 -->|"4x 1k Current-Limiting Resistors"| TC1508
+        ESP32 -.->|"Future Expansion"| ToF["8x8 ToF Matrix Sensor"]
+        JST_Cam --> ESP32Cam["ESP32-CAM (Enclosed)<br/>(+ 3dBi Dipole Antenna)"]
+        ESP32Cam -.->|"WLAN Stream"| ROS2["ROS 2 Ecosystem"]
+        Phone["Operator Smartphone<br/>(Damped Tilt Mount)"] -.->|"WebRTC / RTSP"| ROS2
+    end
+```
+
+---
+
+## 📝 Engineering Retrospective & Teleoperation Reality Check
+
+> ### ⚠️ Teleoperation Usability Assessment & Thesis Retrospective
+> *In robotics prototyping, there is often a substantial gap between clean CAD kinematics and real-world manipulation. Below is an honest engineering evaluation of current platform limitations:*
+> 
+> 1. **The Skid-Steer Alignment Battle:** Driving the chassis into position to acquire small payloads (e.g., picking up an uneven item like a slipper) remains frustrating and imprecise. Due to skid-steer scrubbing dynamics, small directional adjustments cause the chassis to either stick against floor friction or snap beyond the target. The open-loop TT gear motors lack encoder feedback, requiring continuous, fatiguing operator micro-corrections.
+> 2. **Visual Parallax and Spatial Disconnect:** Even with dual cameras, the phone tilt mast, and the redesigned vision cup, judging millimeter clearances between the claw tips, the payload, and the ground surface is difficult through a 2D video stream. The operator lacks depth perception and frequently closes the claw either too early (clamping air) or too late (pushing the payload out of reach).
+> 3. **Absence of Haptic / Current Feedback:** The TowerPro MG995 servos operate in pure open loop without stall current or torque sensing. The operator cannot "feel" how securely an object is captured. Brittle payloads can be easily crushed, or uneven payloads can slip out without the operator realizing it until the arm is fully retracted.
+> 4. **Mechanical Play vs. High Inertia:** Accelerating a mobile phone cantilevered high above the chassis creates significant mechanical torque on the tilt pivot. Despite adding mechanical damping and firmware slew control, sudden chassis stops still cause minor shudder in the video feed.
+> 
+> *Conclusion:* While the vehicle demonstrates that high-torque earthmoving, multi-joint articulation, and reliable low-latency teleoperation are achievable with affordable commercial-off-the-shelf hardware, smooth payload capture requires significant operator patience. Future revisions will consider **closed-loop wheel odometry**, **current-sensing servo feedback**, and **automated depth-based grasping routines** to alleviate operator cognitive load.
+
+---
+
+## 🚀 Quick Start Guide
 
 ### Prerequisites
-- Ubuntu 22.04 / 24.04
-- ROS 2 (Jazzy / Humble)
+- Ubuntu 22.04 / 24.04 LTS
+- ROS 2 Jazzy Jalisco / Humble Hawksbill
 - ESP-IDF v5.2+
-- Docker (for micro-ROS agent)
+- Docker Engine (for micro-ROS Agent daemon)
 
 ```bash
-### Build & Run
-# Clone and enter workspace
+# 1. Build and Source ROS 2 Workspace
 cd ~/ROS_projects/claw_bulldozer_ws
-
-# Build the ROS 2 packages
 colcon build --symlink-install
-
-# Source the overlay
 source install/setup.bash
 
-# Run main bringup script
-./run.sh
-
-# Source ESP-IDF environment
+# 2. Flash Real-Time ESP32 Firmware
 . $HOME/esp/esp-idf/export.sh
-
-# Navigate to firmware project
 cd ~/ROS_projects/claw_bulldozer_ws/firmware/flipper_firmware
-
-# Build, flash to ESP32, and launch UART monitor
 idf.py build flash monitor
 
-# Start micro-ROS Agent (in separate terminal)
+# 3. Start micro-ROS UDP Agent (Terminal 2)
 docker run -it --rm --net=host microros/micro-ros-agent:jazzy udp4 --port 8888
+
+# 4. Access Standalone Calibration & Teleop Web Dashboard
+# Connect to the local router network ("Project") and navigate to:
+http://10.42.0.x/
 ```
