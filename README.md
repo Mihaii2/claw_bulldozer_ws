@@ -8,45 +8,16 @@ An autonomous manipulation and earth-moving platform featuring a multi-axis arti
   <table>
     <tr>
       <td align="center" width="50%">
-        <a href="video/claw_demo.gif">
-          <img src="photos/v4_final_claw.jpg" width="100%" alt="Click to open Full Demonstration GIF" />
-        </a>
-        <br/>
-        <b>🎬 Rev 4: Actuation & Teleoperation Demo</b><br/>
-        <em><a href="video/claw_demo.gif">▶ Click here to view / stream full actuation GIF</a></em><br/>
-        <sub>Synchronized lift, bucket articulation, and payload capture.</sub>
+        <img src="video/claw_demo.gif" width="100%" alt="Actuation & Teleoperation Demo" /><br/>
+        <em>Rev 4: Original actuation demo: Synchronized lift, bucket articulation, and payload capture.</em>
       </td>
       <td align="center" width="50%">
-        <a href="video/object_pickup_demo.gif">
-          <img src="photos/v6_clearance_cutouts.jpg" width="100%" alt="Click to open Full Demonstration GIF" />
-        </a>
-        <br/>
-        <b>🎬 Rev 6: Real-World Payload Capture Demo</b><br/>
-        <em><a href="video/object_pickup_demo.gif">▶ Click here to view / stream full pickup GIF</a></em><br/>
-        <sub>Field validation: In-situ object acquisition and retention.</sub>
+        <img src="video/object_pickup_demo.gif" width="100%" alt="Real-World Payload Capture: Object Acquisition Demo" /><br/>
+        <em>Rev 6: Field validation: Picking up objects.</em>
       </td>
     </tr>
   </table>
 </div>
-
-<details align="center">
-  <summary><b>⏬ Click to expand and load animated GIF demos inline</b></summary>
-  <br/>
-  <div align="center">
-    <table>
-      <tr>
-        <td align="center" width="50%">
-          <img src="video/claw_demo.gif" width="100%" loading="lazy" alt="Actuation & Teleoperation Demo" /><br/>
-          <em>Rev 4: Actuation demo (Synchronized lift, bucket articulation, and payload capture)</em>
-        </td>
-        <td align="center" width="50%">
-          <img src="video/object_pickup_demo.gif" width="100%" loading="lazy" alt="Real-World Payload Capture: Object Acquisition Demo" /><br/>
-          <em>Rev 6: Field validation: Picking up objects</em>
-        </td>
-      </tr>
-    </table>
-  </div>
-</details>
 
 <br/>
 
@@ -95,27 +66,27 @@ An autonomous manipulation and earth-moving platform featuring a multi-axis arti
 
 - **v1.0 (Organic Monolithic Claw):** Claw designed as a continuous 3D organic round skeleton. While lightweight on paper, slicer analysis proved it unviable for FDM printing: massive support structures consumed more filament than the part itself, driving print failure rates and material cost excessively high.
 - **v2.0 (Modular Shell & The Pivot Misalignment Post-Mortem):** Redesigned the claw into flat-laying, easily printable structural components, as well as redesigning the chassis gussets to eliminate support waste. However, rapid CAD prototyping introduced two major mechanical flaws:
-- **Axial Offset:** The bucket/cup swing axis and the claw rotation axis were placed on disparate coordinate planes rather than a single concentric shaft. The mechanical offset degraded clamping reach, making object acquisition unreliable.
-- **Horn Geometry Error:** Servo horn mounting hole pitch and bolt clearances were mismeasured, preventing secure mechanical torque transfer without binding.
+  - **Axial Offset:** The bucket/cup swing axis and the claw rotation axis were placed on disparate coordinate planes rather than a single concentric shaft. The mechanical offset degraded clamping reach, making object acquisition unreliable.
+  - **Horn Geometry Error:** Servo horn mounting hole pitch and bolt clearances were mismeasured, preventing secure mechanical torque transfer without binding.
 - **v3.0 (Concentric Axis & Structural Compliance Investigation):** Redesigned the mounting hub to align the cup and claw along a shared, concentric pivot axis. The mechanical geometry functioned correctly, but the claw extension beams were undersized in thickness. Clamping torque from the MG995 servos flexed the beams outward rather than transferring grip pressure into the target object.
 - **v4.0 (Rigid Structural Reinforcement):** Completely re-engineered the claw support beams with increased cross-sectional area and internal ribbing. Flex was eliminated, permitting high-torque payload capture and retraction directly into the retention cup.
 - **v4.1 (Locomotion Tuning & Track/Wheel Calibration):**
-- **Wheel Dimensional Scaling:** Replaced oversized 45mm-radius wheel collisions with realistic 20mm-radius (40mm diameter) hubs recessed directly into the chassis axle slots for accurate Gazebo physics and ground clearance.
-- **Pivot & Scrubbing Firmware Mitigation:** Tuned the differential drive turning profile across all speed gears to supply 100% PWM (255) to the outside wheels and 0% PWM to the inside wheels during turns, breaking lateral static friction without stalling the motors.
-- **Drivetrain Upgrade Roadmap:** Acquired **all-metal TT 1:90 6V reduction gearboxes** to replace the stock plastic units, delivering substantial low-end torque for heavy earth-moving without risk of gear-tooth shearing.
+  - **Wheel Dimensional Scaling:** Replaced oversized 45mm-radius wheel collisions with realistic 20mm-radius (40mm diameter) hubs recessed directly into the chassis axle slots for accurate Gazebo physics and ground clearance.
+  - **Pivot & Scrubbing Firmware Mitigation:** Tuned the differential drive turning profile across all speed gears to supply 100% PWM (255) to the outside wheels and 0% PWM to the inside wheels during turns, breaking lateral static friction without stalling the motors.
+  - **Drivetrain Upgrade Roadmap:** Acquired **all-metal TT 1:90 6V reduction gearboxes** to replace the stock plastic units, delivering substantial low-end torque for heavy earth-moving without risk of gear-tooth shearing.
 - **v5.0 (Perception Mast, 2S2P Power & Electronics Shielding):**
-- **Dual-Camera Convergence:** Enclosed secondary ESP32-CAM in a custom mount directly above the manipulation bay; added 5th MG995 servo on `GPIO 4` driving a tilt cradle for an operator smartphone.
-- **2S2P High-Current Battery Array (Brownout Mitigation):** In 2S1P, simultaneous 5-servo dynamic actuation and 4WD skid-steer scrubbing produced massive inductive rail sags, triggering ESP32 brownout detector resets (`rst:0x7 (TG0WDT_SYS_RESET)` / `Brownout detector was triggered`). Expanded to **2S2P (4× 18650)**, providing **20A instantaneous discharge headroom** at nominal 7.4V.
+  - **Dual-Camera Convergence:** Enclosed secondary ESP32-CAM in a custom mount directly above the manipulation bay; added 5th MG995 servo on `GPIO 4` driving a tilt cradle for an operator smartphone.
+  - **2S2P High-Current Battery Array (Brownout Mitigation):** In 2S1P, simultaneous 5-servo dynamic actuation and 4WD skid-steer scrubbing produced massive inductive rail sags, triggering ESP32 brownout detector resets (`rst:0x7 (TG0WDT_SYS_RESET)` / `Brownout detector was triggered`). Expanded to **2S2P (4× 18650)**, providing **20A instantaneous discharge headroom** at nominal 7.4V.
 - **v5.1 (Hardware Failure Post-Mortem: Uncalibrated Mechanical Stall Burnout):**
-- **The Incident:** During a rushed bench test prior to implementing joint soft-limits in firmware, the smartphone tilt servo (`GPIO 4`) commanded an unverified absolute position. The smartphone cradle mechanically jammed against the upper structural bracing.
-- **The Consequence:** The servo's internal potentiometer hunted furiously around the unattainable deadband, causing the phone cradle to oscillate violently before pulling continuous stall current ($\approx 1.8\text{A}$ at 6V). The internal plastic/brass reduction gear cluster stripped, and the DC core motor suffered thermal commutator destruction.
-- **The Engineering Fix:** Implemented **dual protection**:
-1. **Dynamic Slew & Collision Soft-Limits:** Embedded piecewise polynomial clearance checks (`calc_smooth_phone_intervals`, `calc_smooth_claw_max`, `calc_smooth_cup_min`) directly in FreeRTOS to prevent conflicting joint trajectories.
+  - **The Incident:** During a rushed bench test prior to implementing joint soft-limits in firmware, the smartphone tilt servo (`GPIO 4`) commanded an unverified absolute position. The smartphone cradle mechanically jammed against the upper structural bracing.
+  - **The Consequence:** The servo's internal potentiometer hunted furiously around the unattainable deadband, causing the phone cradle to oscillate violently before pulling continuous stall current ($\approx 1.8\text{A}$ at 6V). The internal plastic/brass reduction gear cluster stripped, and the DC core motor suffered thermal commutator destruction.
+  - **The Engineering Fix:** Implemented **dual protection**:
+    1. **Dynamic Slew & Collision Soft-Limits:** Embedded piecewise polynomial clearance checks (`calc_smooth_phone_intervals`, `calc_smooth_claw_max`, `calc_smooth_cup_min`) directly in FreeRTOS to prevent conflicting joint trajectories.
     2. **Elastic Band Preload Damping (Backlash Elimination):** The cantilevered weight of the smartphone caused significant play around the MG995 output spline, allowing the cradle to wobble and flutter uncontrollably over small vibrations. To resolve this without machining custom friction clutches, high-tension elastic rubber bands were wrapped around the servo horn and anchored to the lower mount. The elastic bands apply constant downward tension to the horn, preloading the internal gear train, eliminating free play in the output spline, and providing mechanical resistance that dampens out oscillations.
 - **v6.0 (Vision Line-of-Sight & Retro-Clearance Claw Redesign — Current Hardware):**
-- **Overhead Structural Beam Elimination:** The original crossbeams spanning the front chassis uprights introduced severe blind spots. The driver could not see whether an object was seated inside the collection cup. These beams were eliminated in CAD, redistributing torsional rigidity into the lower tub.
-- **Notched Vision Cup:** The solid retention bucket was completely remodeled with a chamfered center notch and lower rear sidewall. The onboard camera and phone tilt rig now maintain direct visual line-of-sight into the bottom of the cup.
-- **Overhead Clearance & Full Retro-Articulation Claw:** In the previous design, scooping under tall objects (such as bottles or vertical canisters) was impossible because the claw hung forward in front of the bucket opening; driving forward caused the claw to collide with the object's body before the cup lip could slide underneath. The claw geometry was re-engineered for expanded angular throw, allowing it to sweep higher up and swing entirely behind the rear profile of the cup when fully extended. This clears the approach path completely, allowing the cup to slide cleanly under tall items before the claw swings over the top to lock them in place.
+  - **Overhead Structural Beam Elimination:** The original crossbeams spanning the front chassis uprights introduced severe blind spots. The driver could not see whether an object was seated inside the collection cup. These beams were eliminated in CAD, redistributing torsional rigidity into the lower tub.
+  - **Notched Vision Cup:** The solid retention bucket was completely remodeled with a chamfered center notch and lower rear sidewall. The onboard camera and phone tilt rig now maintain direct visual line-of-sight into the bottom of the cup.
+  - **Overhead Clearance & Full Retro-Articulation Claw:** In the previous design, scooping under tall objects (such as bottles or vertical canisters) was impossible because the claw hung forward in front of the bucket opening; driving forward caused the claw to collide with the object's body before the cup lip could slide underneath. The claw geometry was re-engineered for expanded angular throw, allowing it to sweep higher up and swing entirely behind the rear profile of the cup when fully extended. This clears the approach path completely, allowing the cup to slide cleanly under tall items before the claw swings over the top to lock them in place.
 
 ---
 
@@ -170,11 +141,11 @@ The primary motherboard is built on a modular composite deck created by joining 
 - **2S2P High-Current Bus Integration:** 4× 18650 cells wired in a 2-series 2-parallel configuration feed nominal 7.4V with 20A continuous discharge potential into the motherboard, fully eliminating inductive voltage dips and preventing the ESP32 from brownout resetting during heavy maneuvers.
 - **Bolted Multi-Board Substrate (M2 Hardware):** Four individual 5cm × 7cm perfboards are mechanically fastened together with M2 nuts and bolts, forming a wide and rigid chassis electronics platform without fragile solder joints bridging structural seams.
 - **Modular JST-XH Connectors:**
-- **IMU Interconnect:** Male JST-XH pin headers soldered directly to the perfboard carry the 3.3V logic/I2C lines to a mating female connector harness on the GY-BMI160 sensor.
-- **Auxiliary ESP32-CAM Power:** A dedicated perfboard-soldered male JST-XH connector delivers clean 5.0V logic rail power directly from the MP1584EN buck converter to the camera enclosure harness.
+  - **IMU Interconnect:** Male JST-XH pin headers soldered directly to the perfboard carry the 3.3V logic/I2C lines to a mating female connector harness on the GY-BMI160 sensor.
+  - **Auxiliary ESP32-CAM Power:** A dedicated perfboard-soldered male JST-XH connector delivers clean 5.0V logic rail power directly from the MP1584EN buck converter to the camera enclosure harness.
 - **Screw Terminal Power & Motor Distribution:**
-- **Battery Bus:** 2× 2-pin PCB screw terminal blocks securely anchor the high-current 7.4V battery input and master return paths without relying on fragile jumper pins.
-- **DC Locomotion:** 4× 2-pin PCB screw terminal blocks connect the left and right drive motor leads directly to the TC1508 motor driver outputs.
+  - **Battery Bus:** 2× 2-pin PCB screw terminal blocks securely anchor the high-current 7.4V battery input and master return paths without relying on fragile jumper pins.
+  - **DC Locomotion:** 4× 2-pin PCB screw terminal blocks connect the left and right drive motor leads directly to the TC1508 motor driver outputs.
 - **Active Driver Heat Dissipation:** Under sustained skid-steer scrubbing, the TC1508 motor driver frequently entered internal thermal shutdown. An extruded aluminum heatsink/radiator was thermal-bonded to the IC package, eliminating thermal throttling during stall torque scenarios.
 - **MCU Pin Isolation ($4\times 1\,\text{k}\Omega$ Resistors):** Dedicated $1\,\text{k}\Omega$ series current-limiting resistors were installed on every logic trace connecting the ESP32 GPIOs to the TC1508 inputs (`IN1`–`IN4`). If the H-bridge suffers catastrophic shoot-through or internal shorting to the motor supply rail, these resistors prevent high voltage from back-feeding and frying the ESP32 silicon.
 - **5A Automotive Blade Fuse:** A standard 5A car blade fuse was soldered directly to the perfboard immediately downstream of the main power switch on the positive line feeding the TC1508 motor rail, isolating full-system shorts and protecting the battery pack from catastrophic damage.
@@ -340,7 +311,7 @@ Unified GPIO allocation across motor drive stages, servo PWM channels, and senso
 
 ## 🔌 Hardware Power Architecture & Wiring Topology
 
-'''mermaid
+```mermaid
 graph TD
     Batt["4x 18650 Li-Ion Cells<br/>(2S2P: 7.4V Nominal, 20A Continuous Headroom)"] --> Switch["Mini 3-Pin SPDT Toggle Switch"]
     Switch --> ScrewBatt["2-Pin Screw Terminals<br/>(Master 7.4V Distribution Bus)"]
@@ -371,7 +342,7 @@ graph TD
         ESP32Cam -.->|"WLAN Stream"| ROS2["ROS 2 Ecosystem"]
         Phone["Operator Smartphone<br/>(Damped Tilt Mount)"] -.->|"WebRTC / RTSP"| ROS2
     end
-'''
+```
 
 ---
 
@@ -397,7 +368,7 @@ graph TD
 - ESP-IDF v5.2+
 - Docker Engine (for micro-ROS Agent daemon)
 
-'''bash
+```bash
 # 1. Build and Source ROS 2 Workspace
 cd ~/ROS_projects/claw_bulldozer_ws
 colcon build --symlink-install
@@ -414,4 +385,4 @@ docker run -it --rm --net=host microros/micro-ros-agent:jazzy udp4 --port 8888
 # 4. Access Standalone Calibration & Teleop Web Dashboard
 # Connect to the local router network ("Project") and navigate to:
 http://10.42.0.x/
-'''
+```
