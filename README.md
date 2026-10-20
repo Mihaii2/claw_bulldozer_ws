@@ -8,11 +8,11 @@ An autonomous manipulation and earth-moving platform featuring a multi-axis arti
   <table>
     <tr>
       <td align="center" width="50%">
-        <img src="video/claw_demo.gif" width="100%" alt="Actuation & Teleoperation Demo" /><br/>
+        <img src="video/claw_demo.gif" width="100%" alt="Actuation & Teleoperation Demo" loading="eager" /><br/>
         <em>Rev 4: Original actuation demo: Synchronized lift, bucket articulation, and payload capture.</em>
       </td>
       <td align="center" width="50%">
-        <img src="video/object_pickup_demo.gif" width="100%" alt="Real-World Payload Capture: Object Acquisition Demo" /><br/>
+        <img src="video/object_pickup_demo.gif" width="100%" alt="Real-World Payload Capture: Object Acquisition Demo" loading="eager"/><br/>
         <em>Rev 6: Field validation: Picking up objects.</em>
       </td>
     </tr>
